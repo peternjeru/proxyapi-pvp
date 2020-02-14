@@ -77,7 +77,7 @@ function init_ProxyAPI_PVP()
                     'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
                     'description' => __( 'Payment method description that the customer will see on your website.', 'woocommerce' ),
-                    'default'     => __( "Check out using Safaricom's Lipa na MPesa.", 'woocommerce' ),
+                    'default'     => __( "Check out using Safaricom's Lipa na MPesa. Check your mobile handset for an instant payment request from Safaricom after making the order", 'woocommerce' ),
                     'desc_tip'    => true
                 ),
 
@@ -121,16 +121,14 @@ function init_ProxyAPI_PVP()
         public function process_payment($order_id)
         {
             global $woocommerce;
-            // we need it to get any order details
-            $order = new WC_Order( $order_id );
+            $order = new WC_Order( $order_id);
 
             $requestID = $this->__getRandom(20);
-            $apiKey = $this->api_key;
             $callbackUrl = home_url('/wc-api/'.$this->webHook);
             $timestamp = time();
             $amount = intval(floatval($order->get_total()) * 100);
             $senderMSISDN = $this->__formatMsisdn($order->get_billing_phone());
-            $accountRef = $order_id;
+            $accountRef = strval($order_id);
 
             $urlparts = parse_url(home_url());
             $origin = $urlparts['scheme']."://".$urlparts['host'];
@@ -176,8 +174,7 @@ function init_ProxyAPI_PVP()
 
                 write_log($body);
 
-                $order->update_status('on-hold', 'Please check your Phone for an instant payment prompt from Safaricom');
-                $order->add_order_note('Order sent. Awaiting Lipa na M-Pesa Confirmation', 1);
+                $order->update_status('on-hold', 'Order sent, awaiting Lipa na M-Pesa Confirmation. Please check your Phone for an instant payment prompt from Safaricom');
                 $woocommerce->cart->empty_cart();
                 return array(
                     'result' => 'success',
