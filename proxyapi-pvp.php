@@ -52,7 +52,7 @@ function init_ProxyAPI_PVP()
                     'process_admin_options'
                 )
             );
-            add_action('woocommerce_api_'.$this->webHook, array( $this, 'pvpCallback'));
+            add_action('woocommerce_api_'.strtolower($this->webHook), array( $this, 'pvp_callback'));
         }
 
         public function init_form_fields()
@@ -137,10 +137,10 @@ function init_ProxyAPI_PVP()
             $order = new WC_Order( $order_id);
 
             $requestID = $this->__getRandom(10);
-            $callbackUrl = home_url('/wc-api/'.$this->webHook);
+            $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
             $timestamp = time();
             $amount = intval(floatval($order->get_total()) * 100);
-            $senderMSISDN = $this->__formatMsisdn($order->get_billing_phone());
+            $senderMSISDN = $this->__format_msisdn($order->get_billing_phone());
             $accountRef = strval($order_id);
 
             $urlparts = parse_url(home_url());
@@ -226,7 +226,7 @@ function init_ProxyAPI_PVP()
             }
         }
 
-        public function pvpCallback()
+        public function pvp_callback()
         {
             $json = file_get_contents('php://input');
             if (empty($json))
@@ -238,7 +238,7 @@ function init_ProxyAPI_PVP()
             write_log($json);
         }
 
-        private function __formatMsisdn($msisdn)
+        private function __format_msisdn($msisdn)
         {
             $msisdn = preg_replace("/^(\+?2547|07)/", "2547", $msisdn);
             $msisdn = preg_replace("/^(\+?2541|01)/", "2541", $msisdn);
