@@ -50,21 +50,15 @@ function init_Proxy_API_PVP()
                     'process_admin_options'
                 )
             );
-            add_action('wp_enqueue_scripts',
-                array(
-                    $this,
-                    'payment_scripts'
-                )
-            );
         }
 
         public function init_form_fields()
         {
             $this->form_fields = array(
                 'enabled' => array(
-                    'title' => 'Enable/Disable',
+                    'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
-                    'label' => 'Enable Pay via Proxy Payment',
+                    'label' => __('Enable Pay via Proxy Payment', 'woocommerce'),
                     'default' => 'yes'
                 ),
                 //This controls the title which the user sees during checkout.
@@ -72,7 +66,6 @@ function init_Proxy_API_PVP()
                     'title'       => __('Title', 'woocommerce'),
                     'type'        => 'text',
                     'default'     => __('Lipa na M-Pesa', 'woocommerce'),
-                    'label'       => __('Lipa na M-Pesa', 'woocommerce'),
                     'desc_tip'    => true
                 ),
                 //This controls the description which the user sees during checkout.
