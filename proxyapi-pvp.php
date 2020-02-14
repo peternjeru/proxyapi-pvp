@@ -180,9 +180,9 @@ function add_Proxy_API_PVP( $methods )
     return $methods;
 }
 
-if (!function_exists( 'print_all_fields'))
+if (!function_exists( 'remove_fields'))
 {
-    function print_all_fields( $fields )
+    function remove_fields( $fields )
     {
         unset( $fields['billing']['billing_company'] ); // remove company field
         unset( $fields['billing']['billing_country'] );
