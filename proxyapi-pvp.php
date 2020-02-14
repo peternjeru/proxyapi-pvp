@@ -173,8 +173,10 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                $order->update_status('on-hold', 'Order sent. Awaiting Lipa na M-Pesa Confirmation');
-                $order->add_order_note('Order sent. Awaiting Lipa na M-Pesa Confirmation', true );
+                write_log($body);
+
+                $order->update_status('on-hold', 'Please check your Phone for an instant payment prompt from Safaricom');
+                $order->add_order_note('Order sent. Awaiting Lipa na M-Pesa Confirmation', 1);
                 $woocommerce->cart->empty_cart();
                 return array(
                     'result' => 'success',
