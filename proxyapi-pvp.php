@@ -74,7 +74,7 @@ function init_Proxy_API_PVP()
                 'description' => array(
                     'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
-                    'description' => __('Lipa na M-Pesa', 'woocommerce'),
+                    'description' => __('Check out via Lipa na M-Pesa.', 'woocommerce'),
                     'default'     => "Check out via Safaricom's Lipa na M-Pesa.",
                 )
             );
@@ -124,7 +124,7 @@ function init_Proxy_API_PVP()
            if(empty($this->api_key))
             {
                 wc_add_notice( 'Missing API Key! Please contact the Administrator.', 'error');
-                return;
+                return false;
             }
 
             if( empty( $_POST['billing']["billing_phone"]) )
