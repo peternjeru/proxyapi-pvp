@@ -167,11 +167,19 @@ function init_ProxyAPI_PVP()
             if (!is_wp_error($response))
             {
                 $body = json_decode($response['body'], true);
-                if (empty($body))
+                if(empty($body))
                 {
                     wc_add_notice( 'Lipa na MPesa request failed. Please try again.', 'error' );
                     return;
                 }
+
+                $order->update_status('on-hold', 'Order sent. Awaiting Lipa na M-Pesa Confirmation');
+                $order->add_order_note('Order sent. Awaiting Lipa na M-Pesa Confirmation', true );
+                $woocommerce->cart->empty_cart();
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url($order)
+                );
             }
             else
             {
@@ -187,13 +195,6 @@ function init_ProxyAPI_PVP()
                 wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
                 return;
             }
-
-            $order->update_status('on-hold', 'Order sent. Awaiting Lipa na M-Pesa Confirmation');
-            $woocommerce->cart->empty_cart();
-            return array(
-                'result' => 'success',
-                'redirect' => $this->get_return_url($order)
-            );
         }
 
         public function pvpCallback()
