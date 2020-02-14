@@ -90,33 +90,6 @@ function init_Proxy_API_PVP()
             );
         }
 
-//        public function payment_scripts()
-//        {
-//            if ( ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order']))
-//            {
-//                return;
-//            }
-//
-//            if('no' === $this->enabled)
-//            {
-//                return;
-//            }
-//
-//            if(empty( $this->api_key))
-//            {
-//                return;
-//            }
-//
-//            if (!is_ssl())
-//            {
-//                return;
-//            }
-//
-//            wp_enqueue_script('pvp_js', 'https://pvp.proxyapi.co.ke/dist/pvp.min.js');
-//            wp_register_script('pvp_woocommerce_js', plugins_url('assets/js/pvp.js', __FILE__), array('jquery', 'pvp_js'));
-//            wp_enqueue_script('pvp_woocommerce_js');
-//        }
-
         public function validate_fields()
         {
            if(empty($this->api_key))
@@ -131,13 +104,13 @@ function init_Proxy_API_PVP()
                 return false;
             }
 
-            if( empty( $_POST['billing']["billing_phone"]) )
+            if( empty($_POST['billing_phone']))
             {
                 wc_add_notice( 'Phone Number is required!', 'error');
                 return false;
             }
 
-            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $_POST['billing']["billing_phone"]) !== 1)
+            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $_POST['billing_phone']) !== 1)
             {
                 wc_add_notice( 'Please enter a valid Phone Number.', 'error');
                 return false;
