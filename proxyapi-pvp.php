@@ -34,7 +34,7 @@ function init_Proxy_API_PVP()
             $this->max_amount = 70000;
             $this->has_fields = false; // in case you need a custom credit card form
             $this->method_title = 'Pay via Proxy API';
-            $this->method_description = "Accept Safaricom Lipa na M-Pesa payments via Proxy API using PVP's Smart Payment Button.";
+            $this->method_description = "Accept Safaricom's Lipa na M-Pesa payments via Proxy API";
 
             $this->init_form_fields();
             $this->init_settings();
@@ -58,22 +58,23 @@ function init_Proxy_API_PVP()
         {
             $this->form_fields = array(
                 "api_key" => array(
-                    'title'       => 'API Key',
+                    'title'       => __('API Key', 'woocommerce'),
                     'type'        => 'text',
-                    'description' => 'API Key assigned from Proxy API',
+                    'description' => __('API Key assigned from Proxy API', 'woocommerce'),
                     'default'     => ''
                 ),
                 //This controls the title which the user sees during checkout.
                 'title' => array(
-                    'title'       => 'Title',
+                    'title'       => __('Title', 'woocommerce'),
                     'type'        => 'text',
-                    'default'     => 'Lipa na M-Pesa',
+                    'default'     => __('Lipa na M-Pesa', 'woocommerce'),
                     'desc_tip'    => true,
                 ),
                 //This controls the description which the user sees during checkout.
                 'description' => array(
-                    'title'       => 'Description',
+                    'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
+                    'description' => __('Lipa na M-Pesa', 'woocommerce'),
                     'default'     => "Check out via Safaricom's Lipa na M-Pesa.",
                 )
             );
