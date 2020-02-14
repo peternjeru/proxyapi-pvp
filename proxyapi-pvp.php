@@ -41,7 +41,8 @@ function init_ProxyAPI_PVP()
             $this->init_form_fields();
             $this->init_settings();
 
-            $this->title = $this->get_option( 'title' );
+            $this->title = $this->get_option('title');
+            $this->enabled = $this->get_option('enabled');
             $this->description = $this->get_option( 'description' );
             $this->api_key = $this->get_option('api_key');
 
@@ -92,9 +93,21 @@ function init_ProxyAPI_PVP()
 
         public function validate_fields()
         {
+            if('no' === $this->enabled)
+            {
+                wc_add_notice( 'Check out with Lipa na MPesa is disabled. Please try another option.', 'error');
+                return false;
+            }
+
            if(empty($this->api_key))
             {
-                wc_add_notice( 'Missing API Key! Please contact the Administrator.', 'error');
+                wc_add_notice( 'API Key not found. Please contact the Administrator.', 'error');
+                return false;
+            }
+
+            if(preg_match('/^[\d]{10}\-[\w]{20}$/', $this->api_key) !== 1)
+            {
+                wc_add_notice( 'API Key not found. Please contact the Administrator.', 'error');
                 return false;
             }
 
@@ -168,14 +181,14 @@ function init_ProxyAPI_PVP()
                 $body = json_decode($response['body']);
                 if(empty($body))
                 {
-                    wc_add_notice( 'Lipa na MPesa request failed. Please try again.', 'error' );
+                    wc_add_notice( 'Lipa na MPesa request failed. Please try again later.', 'error' );
                     return;
                 }
 
                 write_log($body);
-                if (empty($body->ResponseCode))
+                if (!isset($body->StatusCode) || !isset($body->ResponseCode))
                 {
-                    wc_add_notice( 'Lipa na MPesa request failed. Please try again.', 'error' );
+                    wc_add_notice( 'Lipa na MPesa request failed. Please try again later.', 'error' );
                     return;
                 }
 
@@ -187,7 +200,11 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                $order->update_status('on-hold', 'Order sent, awaiting Lipa na M-Pesa Confirmation. Please check your Phone for an instant payment prompt from Safaricom');
+                $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
+                $order->add_meta_data("request_id", $requestID, true);
+                $order->add_meta_data("merchant_request_id", $body->MerchantRequestID, true);
+                $order->add_meta_data("checkout_request_id", $body->CheckoutRequestID, true);
+
                 $woocommerce->cart->empty_cart();
                 return array(
                     'result' => 'success',
