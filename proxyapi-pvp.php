@@ -165,7 +165,7 @@ function init_ProxyAPI_PVP()
             $response = wp_remote_post( $endpoint, $options);
             if (!is_wp_error($response))
             {
-                $body = json_decode($response['body'], true);
+                $body = json_decode($response['body']);
                 if(empty($body))
                 {
                     wc_add_notice( 'Lipa na MPesa request failed. Please try again.', 'error' );
@@ -173,6 +173,19 @@ function init_ProxyAPI_PVP()
                 }
 
                 write_log($body);
+                if (empty($body->ResponseCode))
+                {
+                    wc_add_notice( 'Lipa na MPesa request failed. Please try again.', 'error' );
+                    return;
+                }
+
+                $responseCode = $body->ResponseCode;
+                $responseDesc = $body->ResponseDesc;
+                if (intval($responseCode) !== 0)
+                {
+                    wc_add_notice( 'Lipa na MPesa request failed. '.$responseDesc, 'error' );
+                    return;
+                }
 
                 $order->update_status('on-hold', 'Order sent, awaiting Lipa na M-Pesa Confirmation. Please check your Phone for an instant payment prompt from Safaricom');
                 $woocommerce->cart->empty_cart();
