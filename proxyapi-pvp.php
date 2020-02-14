@@ -149,11 +149,13 @@ function init_ProxyAPI_PVP()
                 "AccountReference" => $accountRef,
                 "Origin" => $origin
             );
+            $body = wp_json_encode( $body );
 
             $options = [
                 'body'        => $body,
                 'headers'     => [
                     'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
                 ],
                 'timeout'     => 60,
                 'redirection' => 5,
