@@ -57,7 +57,7 @@ if (!function_exists( 'proxyapi_pvp_sanitize_api_key'))
 {
     function proxyapi_pvp_sanitize_api_key($apiKey)
     {
-        if (preg_match('/^[\d]{10}\-[\w]{20}$/', $apiKey) !== 1)
+        if (!empty($apiKey) && preg_match('/^[\d]{10}\-[\w]{20}$/', $apiKey) !== 1)
         {
             add_settings_error(
                 'proxyapi_pvp_api_key_value',
