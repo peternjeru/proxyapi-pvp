@@ -31,16 +31,19 @@ function init_Proxy_API_PVP()
         {
             $this->id = 'proxyapi_pvp_settings'; // payment gateway plugin ID
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
-            $this->max_amount = 70000;
             $this->has_fields = false; // in case you need a custom credit card form
-            $this->method_title = 'Pay via Proxy API';
-            $this->method_description = "Accept Safaricom's Lipa na M-Pesa payments via Proxy API";
+            $this->method_title = __('Pay via Proxy API', 'woocommerce' );
+            $this->method_description = __("Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API", 'woocommerce' );
+            $this->max_amount = 70000;
 
             $this->supports = array(
                 'products'
             );
             $this->init_form_fields();
             $this->init_settings();
+
+            $this->title              = $this->get_option( 'title' );
+            $this->description        = $this->get_option( 'description' );
 
             $this->api_key = $this->get_option('api_key');
 
@@ -57,14 +60,16 @@ function init_Proxy_API_PVP()
             $this->form_fields = array(
                 'enabled' => array(
                     'title' => __('Enable/Disable', 'woocommerce'),
-                    'type' => 'checkbox',
                     'label' => __('Enable Pay via Proxy Payment', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'description' => '',
                     'default' => 'yes'
                 ),
                 //This controls the title which the user sees during checkout.
                 'title' => array(
                     'title'       => __('Title', 'woocommerce'),
                     'type'        => 'text',
+                    'description' => __('Payment method description that the customer will see on your checkout.', 'woocommerce' ),
                     'default'     => __('Lipa na M-Pesa', 'woocommerce'),
                     'desc_tip'    => true
                 ),
@@ -72,7 +77,9 @@ function init_Proxy_API_PVP()
                 'description' => array(
                     'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
-                    'default'     => "Check out via Lipa na M-Pesa."
+                    'description' => __( 'Payment method description that the customer will see on your website.', 'woocommerce' ),
+                    'default'     => __( 'Check out using Lipa na MPesa.', 'woocommerce' ),
+                    'desc_tip'    => true
                 ),
 
                 "api_key" => array(
@@ -141,10 +148,10 @@ function init_Proxy_API_PVP()
     }
 }
 
-function add_Proxy_API_PVP( $methods )
+function add_Proxy_API_PVP( $gateways)
 {
-    $methods[] = 'Proxy_API_PVP';
-    return $methods;
+    $gateways[] = 'Proxy_API_PVP';
+    return $gateways;
 }
 
 if (!function_exists( 'remove_fields'))
