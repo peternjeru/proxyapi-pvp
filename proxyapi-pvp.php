@@ -160,7 +160,6 @@ function init_Proxy_API_PVP()
             return $msisdn;
         }
     }
-    $PVP = Proxy_API_PVP::getInstance();
 }
 
 function add_Proxy_API_PVP( $methods )
