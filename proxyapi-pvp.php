@@ -137,7 +137,7 @@ function init_Proxy_API_PVP()
                 return false;
             }
 
-            if( preg_match('/^(\+?254|0)(7|1)([\d]{8})$/', $_POST['billing']["billing_phone"]) !== 1)
+            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $_POST['billing']["billing_phone"]) !== 1)
             {
                 wc_add_notice( 'Please enter a valid Phone Number.', 'error');
                 return false;
