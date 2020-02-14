@@ -17,10 +17,7 @@
 
 defined( 'ABSPATH' ) or die( 'Not allowed' );
 
-require "proxyapi-pvp-activation.php";
-require "proxyapi-pvp-deactivation.php";
 require "proxyapi-pvp-uninstall.php";
-require "proxyapi-pvp-settings.php";
 
 function init_ProxyAPI_PVP()
 {
