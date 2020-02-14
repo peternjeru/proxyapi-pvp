@@ -22,11 +22,13 @@ require "proxyapi-pvp-deactivation.php";
 require "proxyapi-pvp-uninstall.php";
 require "proxyapi-pvp-settings.php";
 
-function init_Proxy_API_PVP()
+function init_ProxyAPI_PVP()
 {
-    class Proxy_API_PVP extends WC_Payment_Gateway
+    class ProxyAPI_PVP extends WC_Payment_Gateway
     {
         private static $instance = false;
+        private $webHook = "ProxyAPI_PVP";
+
         public function __construct()
         {
             $this->id = 'proxyapi_pvp_settings'; // payment gateway plugin ID
@@ -42,9 +44,8 @@ function init_Proxy_API_PVP()
             $this->init_form_fields();
             $this->init_settings();
 
-            $this->title              = $this->get_option( 'title' );
-            $this->description        = $this->get_option( 'description' );
-
+            $this->title = $this->get_option( 'title' );
+            $this->description = $this->get_option( 'description' );
             $this->api_key = $this->get_option('api_key');
 
             add_action('woocommerce_update_options_payment_gateways_'.$this->id,
@@ -53,6 +54,7 @@ function init_Proxy_API_PVP()
                     'process_admin_options'
                 )
             );
+            add_action('woocommerce_api_'.$this->webHook, array( $this, 'pvpCallback'));
         }
 
         public function init_form_fields()
@@ -78,7 +80,7 @@ function init_Proxy_API_PVP()
                     'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
                     'description' => __( 'Payment method description that the customer will see on your website.', 'woocommerce' ),
-                    'default'     => __( 'Check out using Lipa na MPesa.', 'woocommerce' ),
+                    'default'     => __( "Check out using Safaricom's Lipa na MPesa.", 'woocommerce' ),
                     'desc_tip'    => true
                 ),
 
@@ -122,9 +124,69 @@ function init_Proxy_API_PVP()
         public function process_payment($order_id)
         {
             global $woocommerce;
-
             // we need it to get any order details
             $order = new WC_Order( $order_id );
+
+            $requestID = $this->__getRandom(20);
+            $apiKey = $this->api_key;
+            $callbackUrl = home_url('/wc-api/'.$this->webHook);
+            $timestamp = time();
+            $amount = $order->get_total();
+            $senderMSISDN = $this->__formatMsisdn($order->get_billing_phone());
+            $accountRef = $order_id;
+
+            $urlparts = parse_url(home_url());
+            $origin = $urlparts['scheme']."://".$urlparts['host'];
+
+            $endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
+            $body = array(
+                "RequestID" => $requestID,
+                "ApiKey" => $this->api_key,
+                "CallbackUrl" => $callbackUrl,
+                "RequestTimestamp" => $timestamp,
+                "Amount" => $amount,
+                "SenderMSISDN" => $senderMSISDN,
+                "AccountReference" => $accountRef,
+                "Origin" => $origin
+            );
+
+            $options = [
+                'body'        => $body,
+                'headers'     => [
+                    'Content-Type' => 'application/json',
+                ],
+                'timeout'     => 60,
+                'redirection' => 5,
+                'blocking'    => true,
+                'httpversion' => '1.0',
+                'sslverify'   => false,
+                'data_format' => 'body',
+            ];
+
+            $response = wp_remote_post( $endpoint, $options);
+            if (!is_wp_error($response))
+            {
+                $body = json_decode($response['body'], true);
+                if (empty($body))
+                {
+                    wc_add_notice( 'Lipa na MPesa request failed. Please try again.', 'error' );
+                    return;
+                }
+            }
+            else
+            {
+                if ($response->has_errors())
+                {
+                    $error = $response->get_error_message();
+                }
+                else
+                {
+                    $error = "Please try again later.";
+                }
+
+                wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
+                return;
+            }
 
             $order->update_status('on-hold', 'Order sent. Awaiting Lipa na M-Pesa Confirmation');
             $woocommerce->cart->empty_cart();
@@ -134,9 +196,16 @@ function init_Proxy_API_PVP()
             );
         }
 
-        public function webhook()
+        public function pvpCallback()
         {
+            $json = file_get_contents('php://input');
+            if (empty($json))
+            {
+                write_log("Empty callback");
+                return;
+            }
 
+            write_log($json);
         }
 
         private function __formatMsisdn($msisdn)
@@ -145,12 +214,45 @@ function init_Proxy_API_PVP()
             $msisdn = preg_replace("/^(\+?2541|01)/", "2541", $msisdn);
             return $msisdn;
         }
+
+        private function __getRandom($size)
+        {
+            if (intval($size) <= 0)
+            {
+                return null;
+            }
+
+            $token = "";
+            $code = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            $code .= "123456789";
+
+            for ($i=0; $i < $size; $i++)
+            {
+                $token .= $code[$this->__crypto_rand_secure(strlen($code)-1)];
+            }
+            return $token;
+        }
+
+        private function __crypto_rand_secure($size)
+        {
+            $log = ceil(log($size, 2));
+            $bytes = (int) ($log / 8) + 1; // length in bytes
+            $bits = (int) $log + 1; // length in bits
+            $filter = (int) (1 << $bits) - 1; // set all lower bits to 1
+            do
+            {
+                $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
+                $rnd = $rnd & $filter; // discard irrelevant bits
+            }
+            while($rnd > $size);
+            return $rnd;
+        }
     }
 }
 
-function add_Proxy_API_PVP( $gateways)
+function add_ProxyAPI_PVP( $gateways)
 {
-    $gateways[] = 'Proxy_API_PVP';
+    $gateways[] = 'ProxyAPI_PVP';
     return $gateways;
 }
 
@@ -178,6 +280,24 @@ if (!function_exists( 'remove_fields'))
     }
 }
 
-add_action('plugins_loaded', 'init_Proxy_API_PVP');
-add_filter( 'woocommerce_payment_gateways', 'add_Proxy_API_PVP');
+add_action('plugins_loaded', 'init_ProxyAPI_PVP');
+add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
+
+if (!function_exists('write_log'))
+{
+    function write_log($log)
+    {
+        if ( true === WP_DEBUG )
+        {
+            if ( is_array( $log ) || is_object( $log ) )
+            {
+                error_log( print_r( $log, true ) );
+            }
+            else
+            {
+                error_log( $log );
+            }
+        }
+    }
+}
