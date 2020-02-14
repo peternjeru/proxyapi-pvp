@@ -136,7 +136,7 @@ function init_ProxyAPI_PVP()
             global $woocommerce;
             $order = new WC_Order( $order_id);
 
-            $requestID = $this->__getRandom(20);
+            $requestID = $this->__getRandom(10);
             $callbackUrl = home_url('/wc-api/'.$this->webHook);
             $timestamp = time();
             $amount = intval(floatval($order->get_total()) * 100);
@@ -193,7 +193,7 @@ function init_ProxyAPI_PVP()
                 }
 
                 $responseCode = $body->ResponseCode;
-                $responseDesc = $body->ResponseDesc;
+                $responseDesc = $body->ResponseDescription;
                 if (intval($responseCode) !== 0)
                 {
                     wc_add_notice( 'Lipa na MPesa request failed. '.$responseDesc, 'error' );
@@ -221,7 +221,6 @@ function init_ProxyAPI_PVP()
                 {
                     $error = "Please try again later.";
                 }
-
                 wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
                 return;
             }
