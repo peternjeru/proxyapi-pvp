@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/pay-via-proxyapi/
- * Description: Your extension's description text.
+ * Description: Accept Safaricom Lipa na M-Pesa payments via Proxy API using PVP's Smart Payment Button.
  * Version: 1.0.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
@@ -30,10 +30,10 @@ function init_Proxy_API_PVP()
         public function __construct()
         {
             $this->id = 'proxyapi_pvp_settings'; // payment gateway plugin ID
-            $this->icon = __DIR__.'/assets/images/icon-small.png'; // URL of the icon that will be displayed on checkout page near your gateway name
+            $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->max_amount = 70000;
             $this->has_fields = false; // in case you need a custom credit card form
-            $this->method_title = 'Pay via Proxy';
+            $this->method_title = 'Pay via Proxy API';
             $this->method_description = "Accept Safaricom Lipa na M-Pesa payments via Proxy API using PVP's Smart Payment Button.";
 
             $this->init_form_fields();
@@ -67,7 +67,8 @@ function init_Proxy_API_PVP()
                 'title' => array(
                     'title'       => 'Title',
                     'type'        => 'text',
-                    'default'     => 'Lipa na M-Pesa'
+                    'default'     => 'Lipa na M-Pesa',
+                    'desc_tip'    => true,
                 ),
                 //This controls the description which the user sees during checkout.
                 'description' => array(
@@ -119,6 +120,12 @@ function init_Proxy_API_PVP()
 
         public function validate_fields()
         {
+           if(empty($this->api_key))
+            {
+                wc_add_notice( 'Missing API Key! Please contact the Administrator.', 'error');
+                return;
+            }
+
             if( empty( $_POST['billing']["billing_phone"]) )
             {
                 wc_add_notice( 'Phone Number is required!', 'error');
