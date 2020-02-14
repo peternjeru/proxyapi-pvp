@@ -64,7 +64,7 @@ function init_Proxy_API_PVP()
                 'enabled' => array(
                     'title' => 'Enable/Disable',
                     'type' => 'checkbox',
-                    'label' => 'Enable PVP Payment',
+                    'label' => 'Enable Pay via Proxy Payment',
                     'default' => 'yes'
                 ),
                 //This controls the title which the user sees during checkout.
@@ -180,5 +180,11 @@ function add_Proxy_API_PVP( $methods )
     return $methods;
 }
 
+function print_all_fields( $fields )
+{
+    print_r( $fields );
+}
+
 add_action('plugins_loaded', 'init_Proxy_API_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_Proxy_API_PVP' );
+add_filter( 'woocommerce_checkout_fields' , 'print_all_fields' );
