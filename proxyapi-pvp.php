@@ -180,11 +180,30 @@ function add_Proxy_API_PVP( $methods )
     return $methods;
 }
 
-function print_all_fields( $fields )
+if (!function_exists( 'print_all_fields'))
 {
-    print_r( $fields );
+    function print_all_fields( $fields )
+    {
+        unset( $fields['billing']['billing_company'] ); // remove company field
+        unset( $fields['billing']['billing_country'] );
+        unset( $fields['billing']['billing_address_1'] );
+        unset( $fields['billing']['billing_address_2'] );
+        unset( $fields['billing']['billing_city'] );
+        unset( $fields['billing']['billing_state'] ); // remove state field
+        unset( $fields['billing']['billing_postcode'] ); // remove zip code field
+
+        unset( $fields['shipping']['shipping_company'] );
+        unset( $fields['shipping']['shipping_last_name'] );
+        unset( $fields['shipping']['shipping_country'] );
+        unset( $fields['shipping']['shipping_address_2'] );
+        unset( $fields['shipping']['shipping_city'] );
+        unset( $fields['shipping']['shipping_state'] );
+        unset( $fields['shipping']['shipping_postcode'] );
+
+        return $fields;
+    }
 }
 
 add_action('plugins_loaded', 'init_Proxy_API_PVP');
-add_filter( 'woocommerce_payment_gateways', 'add_Proxy_API_PVP' );
-add_filter( 'woocommerce_checkout_fields' , 'print_all_fields' );
+add_filter( 'woocommerce_payment_gateways', 'add_Proxy_API_PVP');
+add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
