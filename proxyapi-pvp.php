@@ -36,11 +36,15 @@ function init_Proxy_API_PVP()
             $this->method_title = 'Pay via Proxy API';
             $this->method_description = "Accept Safaricom's Lipa na M-Pesa payments via Proxy API";
 
+            $this->supports = array(
+                'products'
+            );
             $this->init_form_fields();
             $this->init_settings();
+
             $this->api_key = $this->get_option('api_key');
 
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id,
+            add_action('woocommerce_update_options_payment_gateways_'.$this->id,
                 array(
                     $this,
                     'process_admin_options'
@@ -57,40 +61,34 @@ function init_Proxy_API_PVP()
         public function init_form_fields()
         {
             $this->form_fields = array(
+                'enabled' => array(
+                    'title' => 'Enable/Disable',
+                    'type' => 'checkbox',
+                    'label' => 'Enable PVP Payment',
+                    'default' => 'yes'
+                ),
+                //This controls the title which the user sees during checkout.
+                'title' => array(
+                    'title'       => 'Title',
+                    'type'        => 'text',
+                    'default'     => 'Lipa na M-Pesa',
+                    'desc_tip'    => true
+                ),
+                //This controls the description which the user sees during checkout.
+                'description' => array(
+                    'title'       => 'Description',
+                    'type'        => 'textarea',
+                    'default'     => "Check out via Lipa na M-Pesa."
+                ),
+
                 "api_key" => array(
                     'title'       => __('API Key', 'woocommerce'),
                     'type'        => 'text',
                     'description' => __('API Key assigned from Proxy API', 'woocommerce'),
                     'default'     => ''
-                ),
-                //This controls the title which the user sees during checkout.
-                'title' => array(
-                    'title'       => __('Title', 'woocommerce'),
-                    'type'        => 'text',
-                    'default'     => __('Lipa na M-Pesa', 'woocommerce'),
-                    'desc_tip'    => true,
-                ),
-                //This controls the description which the user sees during checkout.
-                'description' => array(
-                    'title'       => __('Description', 'woocommerce'),
-                    'type'        => 'textarea',
-                    'description' => __('Check out via Lipa na M-Pesa.', 'woocommerce'),
-                    'default'     => "Check out via Safaricom's Lipa na M-Pesa.",
                 )
             );
         }
-
-//        public function payment_fields()
-//        {
-//            $formHtml = '
-//<fieldset id="wc-' . esc_attr( $this->id ) . '-lnm-form" class="wc-payment-form" style="background:transparent;">
-//    <div class="form-row form-row-wide"><label>MPhone Number<span class="required">*</span></label>
-//        <input id="pvp_sender_msisdn" type="text" autocomplete="off">
-//    </div>
-//    <div class="clear"></div>
-//</fieldset>';
-//            echo $formHtml;
-//        }
 
 //        public function payment_scripts()
 //        {
@@ -124,6 +122,12 @@ function init_Proxy_API_PVP()
            if(empty($this->api_key))
             {
                 wc_add_notice( 'Missing API Key! Please contact the Administrator.', 'error');
+                return false;
+            }
+
+            if (!is_ssl())
+            {
+                wc_add_notice( 'Cannot make payment over non-SSL channel! Please contact the Administrator.', 'error');
                 return false;
             }
 
