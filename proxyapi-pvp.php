@@ -72,6 +72,7 @@ function init_Proxy_API_PVP()
                     'title'       => __('Title', 'woocommerce'),
                     'type'        => 'text',
                     'default'     => __('Lipa na M-Pesa', 'woocommerce'),
+                    'label'       => __('Lipa na M-Pesa', 'woocommerce'),
                     'desc_tip'    => true
                 ),
                 //This controls the description which the user sees during checkout.
