@@ -69,14 +69,14 @@ function init_Proxy_API_PVP()
                 ),
                 //This controls the title which the user sees during checkout.
                 'title' => array(
-                    'title'       => 'Title',
+                    'title'       => __('Title', 'woocommerce'),
                     'type'        => 'text',
-                    'default'     => 'Lipa na M-Pesa',
+                    'default'     => __('Lipa na M-Pesa', 'woocommerce'),
                     'desc_tip'    => true
                 ),
                 //This controls the description which the user sees during checkout.
                 'description' => array(
-                    'title'       => 'Description',
+                    'title'       => __('Checkout using Lipa na M-Pesa', 'woocommerce'),
                     'type'        => 'textarea',
                     'default'     => "Check out via Lipa na M-Pesa."
                 ),
