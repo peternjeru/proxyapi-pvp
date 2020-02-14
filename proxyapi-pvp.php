@@ -128,7 +128,7 @@ function init_ProxyAPI_PVP()
             $apiKey = $this->api_key;
             $callbackUrl = home_url('/wc-api/'.$this->webHook);
             $timestamp = time();
-            $amount = $order->get_total();
+            $amount = intval(floatval($order->get_total()) * 100);
             $senderMSISDN = $this->__formatMsisdn($order->get_billing_phone());
             $accountRef = $order_id;
 
@@ -147,6 +147,8 @@ function init_ProxyAPI_PVP()
                 "Origin" => $origin
             );
             $body = wp_json_encode( $body );
+
+            write_log($body);
 
             $options = [
                 'body'        => $body,
