@@ -203,8 +203,11 @@ function init_ProxyAPI_PVP()
                 }
 
                 $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
-                $order->add_meta_data("request_id", $requestID, true);
-                $order->add_meta_data("checkout_request_id", $body->CheckoutRequestID, true);
+//                $order->add_meta_data("request_id", $requestID, true);
+//                $order->add_meta_data("checkout_request_id", $body->CheckoutRequestID, true);
+
+                add_post_meta($order_id, "request_id", $requestID, true);
+                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
 
                 $woocommerce->cart->empty_cart();
                 return array(
@@ -247,12 +250,14 @@ function init_ProxyAPI_PVP()
             {
                 $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
                 $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+                write_log("STK Callback");
                 write_log($order);
             }
             else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
             {
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
                 $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+                write_log("PVP Callback");
                 write_log($order);
             }
             else
