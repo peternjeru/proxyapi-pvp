@@ -246,13 +246,13 @@ function init_ProxyAPI_PVP()
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
                 $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
-                $order = wc_get_orders_custom(array("checkout_request_id" => $checkoutRequestId));
+                $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 write_log($order);
             }
             else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
             {
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
-                $order = wc_get_orders_by_checkout_id(array("checkout_request_id" => $checkoutRequestId));
+                $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 write_log($order);
             }
             else
@@ -353,15 +353,22 @@ if (!function_exists('write_log'))
     }
 }
 
-if (!function_exists('wc_get_orders_by_checkout_id'))
+if (!function_exists('wc_get_orders_custom'))
 {
-    function wc_get_orders_by_checkout_id($query, $queryVars)
+    function wc_get_orders_custom($query, $filters)
     {
-        if (!empty( $queryVars['checkout_request_id']))
+        if (!empty( $filters['checkout_request_id']))
         {
             $query['meta_query'][] = array(
                 'key' => 'checkout_request_id',
-                'value' => esc_attr( $queryVars['checkout_request_id']),
+                'value' => esc_attr( $filters['checkout_request_id']),
+            );
+        }
+        else if (!empty( $filters['request_id']))
+        {
+            $query['meta_query'][] = array(
+                'key' => 'request_id',
+                'value' => esc_attr( $filters['request_id']),
             );
         }
         return $query;
@@ -371,4 +378,4 @@ if (!function_exists('wc_get_orders_by_checkout_id'))
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
-add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_by_checkout_id', 10, 2);
+add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
