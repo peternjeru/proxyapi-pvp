@@ -159,8 +159,6 @@ function init_ProxyAPI_PVP()
             );
             $body = wp_json_encode( $body );
 
-            write_log($body);
-
             $options = [
                 'body'        => $body,
                 'headers'     => [
@@ -185,7 +183,6 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                write_log($body);
                 if (!isset($body->StatusCode) || !isset($body->ResponseCode))
                 {
                     wc_add_notice( 'Lipa na MPesa request failed. Please try again later.', 'error' );
@@ -202,7 +199,6 @@ function init_ProxyAPI_PVP()
 
                 $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
                 $order->add_meta_data("request_id", $requestID, true);
-                $order->add_meta_data("merchant_request_id", $body->MerchantRequestID, true);
                 $order->add_meta_data("checkout_request_id", $body->CheckoutRequestID, true);
 
                 $woocommerce->cart->empty_cart();
@@ -235,7 +231,31 @@ function init_ProxyAPI_PVP()
                 return;
             }
 
-            write_log($json);
+            $callback = json_decode($json);
+            if (empty($callback))
+            {
+                write_log("Empty callback");
+                return;
+            }
+
+            if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
+            {
+                $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
+                $order = wc_get_orders_custom(array("checkout_request_id" => $checkoutRequestId));
+                write_log($order);
+            }
+            else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
+            {
+                $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
+                $order = wc_get_orders_custom(array("checkout_request_id" => $checkoutRequestId));
+                write_log($order);
+            }
+            else
+            {
+                write_log("Invalid Callback:\n");
+                write_log(write_log($json));
+                return;
+            }
         }
 
         private function __format_msisdn($msisdn)
@@ -310,10 +330,6 @@ if (!function_exists( 'remove_fields'))
     }
 }
 
-add_action('plugins_loaded', 'init_ProxyAPI_PVP');
-add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
-add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
-
 if (!function_exists('write_log'))
 {
     function write_log($log)
@@ -331,3 +347,22 @@ if (!function_exists('write_log'))
         }
     }
 }
+
+if (!function_exists('wc_get_orders_custom'))
+{
+    function wc_get_orders_custom($query, $queryVars)
+    {
+        if (!empty( $queryVars['checkout_request_id']))
+        {
+            $query['meta_query'][] = array(
+                'key' => 'checkout_request_id',
+                'value' => esc_attr( $queryVars['customvar'] ),
+            );
+        }
+    }
+}
+
+add_action('plugins_loaded', 'init_ProxyAPI_PVP');
+add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
+add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
+add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
