@@ -31,8 +31,8 @@ function init_ProxyAPI_PVP()
             $this->id = 'proxyapi_pvp_settings'; // payment gateway plugin ID
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->has_fields = false; // in case you need a custom credit card form
-            $this->method_title = __('Pay via Proxy API', 'woocommerce' );
-            $this->method_description = __("Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API", 'woocommerce' );
+            $this->method_title = __('Pay via Proxy API', 'woocommerce');
+            $this->method_description = __("Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API", 'woocommerce');
             $this->max_amount = 70000;
 
             $this->supports = array(
@@ -136,7 +136,12 @@ function init_ProxyAPI_PVP()
             global $woocommerce;
             $order = new WC_Order( $order_id);
 
-            $requestID = $this->__getRandom(10);
+            $requestID = $this->__getRandom(15);
+            if (empty($requestID))
+            {
+                wc_add_notice('Internal Server Error. Please try again later.', 'error');
+                return;
+            }
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
             $timestamp = time();
             $amount = intval(floatval($order->get_total()) * 100);
@@ -260,6 +265,7 @@ function init_ProxyAPI_PVP()
 
         private function __format_msisdn($msisdn)
         {
+            //allow local numbers only
             $msisdn = preg_replace("/^(\+?2547|07)/", "2547", $msisdn);
             $msisdn = preg_replace("/^(\+?2541|01)/", "2541", $msisdn);
             return $msisdn;
@@ -275,7 +281,6 @@ function init_ProxyAPI_PVP()
             $token = "";
             $code = "ABCDEFGHJKLMNPQRSTUVWXYZ";
             $code .= "123456789";
-
             for ($i=0; $i < $size; $i++)
             {
                 $token .= $code[$this->__crypto_rand_secure(strlen($code)-1)];
@@ -359,6 +364,7 @@ if (!function_exists('wc_get_orders_custom'))
                 'value' => esc_attr( $queryVars['customvar'] ),
             );
         }
+        return $query;
     }
 }
 
