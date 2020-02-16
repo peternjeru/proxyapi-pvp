@@ -246,19 +246,60 @@ function init_ProxyAPI_PVP()
                 return;
             }
 
+            write_log($callback);
+
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
+                //either on success or failure
                 $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
                 $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
-                write_log("STK Callback");
-                write_log($order);
+                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
+                {
+                    write_log("Payment already processed: ".$order->get_status());
+                    return;
+                }
+
+                $resultCode = intval($callback->Body->stkCallback->ResultCode);
+                if($resultCode !== 0)
+                {
+                    //failed transaction
+                    $resultDesc = intval($callback->Body->stkCallback->ResultDesc);
+                    $order->update_status('failed', $resultDesc);
+                    return;
+                }
+                else
+                {
+                    //success transaction
+                    if (!empty($callback->Body->stkCallback->CallbackMetadata->Item))
+                    {
+                        $items = $callback->Body->stkCallback->CallbackMetadata->Item;
+                        $orderDetails = array();
+                        $paramKey = null;
+                        foreach ($items as $key=>$value)
+                        {
+                            if($key === "Name")
+                            {
+                                $paramKey = $value;
+                            }
+                            else
+                            {
+                                $orderDetails[$paramKey] = $value;
+                            }
+                        }
+                        write_log($orderDetails);
+                    }
+                }
             }
             else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
             {
+                //only on success
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
                 $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
-                write_log("PVP Callback");
-                write_log($order);
+                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
+                {
+                    write_log("Payment already processed: ".$order->get_status());
+                    return;
+                }
             }
             else
             {
