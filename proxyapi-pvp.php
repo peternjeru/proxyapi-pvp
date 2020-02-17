@@ -139,11 +139,6 @@ function init_ProxyAPI_PVP()
             $order = new WC_Order( $order_id);
 
             $requestID = $this->__getRandom(15);
-            if (empty($requestID))
-            {
-                wc_add_notice('Internal Server Error. Please try again later.', 'error');
-                return;
-            }
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
             $timestamp = time();
             $amount = intval(floatval($order->get_total()) * 100);
@@ -185,13 +180,17 @@ function init_ProxyAPI_PVP()
                 $body = json_decode($response['body']);
                 if(empty($body))
                 {
-                    wc_add_notice( 'Lipa na MPesa request failed. Please try again later.', 'error' );
+                	$message = 'Lipa na MPesa request failed. Please try again later.';
+                    wc_add_notice($message, 'error' );
+					write_log($message.": Empty Response Body from API");
                     return;
                 }
 
                 if (!isset($body->StatusCode) || !isset($body->ResponseCode))
                 {
-                    wc_add_notice( 'Lipa na MPesa request failed. Please try again later.', 'error' );
+					$message = 'Lipa na MPesa request failed. Please try again later.';
+					wc_add_notice($message, 'error' );
+					write_log($message.": Missing mandatory parameters in response from API");
                     return;
                 }
 
@@ -199,15 +198,19 @@ function init_ProxyAPI_PVP()
                 $responseDesc = $body->ResponseDescription;
                 if (intval($responseCode) !== 0)
                 {
-                    wc_add_notice( 'Lipa na MPesa request failed. '.$responseDesc, 'error' );
+					wc_add_notice($responseDesc, 'error' );
+					write_log($responseDesc);
+					do_action('proxyapi_pvp_payment_failed', $order_id, $responseCode, $responseDesc);
                     return;
                 }
 
                 $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
                 add_post_meta($order_id, "request_id", $requestID, true);
                 add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
-
                 $woocommerce->cart->empty_cart();
+
+				do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->CheckoutRequestID);
+
                 return array(
                     'result' => 'success',
                     'redirect' => $this->get_return_url($order)
@@ -224,6 +227,7 @@ function init_ProxyAPI_PVP()
                     $error = "Please try again later.";
                 }
                 wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
+				write_log($error);
                 return;
             }
         }
@@ -244,21 +248,20 @@ function init_ProxyAPI_PVP()
                 return;
             }
 
-            write_log($callback);
-
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
-                //either on success or failure
+                //called either on success or failure
                 $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
+					write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
                     return;
                 }
                 $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
-					do_action('proxyapi_pvp_payment_complete', $order->get_id());
+					do_action('proxyapi_pvp_payment_completed', $order->get_id());
                     write_log("Payment already processed: ".$order->get_status());
                     return;
                 }
@@ -300,23 +303,24 @@ function init_ProxyAPI_PVP()
                         {
                             add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
                         }
-						do_action('proxyapi_pvp_payment_complete', $order->get_id());
+						do_action('proxyapi_pvp_payment_completed', $order->get_id());
                     }
                 }
             }
             else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
             {
-                //only on success
+                //called only on success
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
+					write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
                     return;
                 }
                 $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
-					do_action('proxyapi_pvp_payment_complete', $order->get_id());
+					do_action('proxyapi_pvp_payment_completed', $order->get_id());
                     return;
                 }
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
@@ -342,7 +346,7 @@ function init_ProxyAPI_PVP()
                     {
                         add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
                     }
-					do_action('proxyapi_pvp_payment_complete', $order->get_id());
+					do_action('proxyapi_pvp_payment_completed', $order->get_id());
                 }
             }
             else
@@ -429,13 +433,13 @@ if (!function_exists('write_log'))
     {
         if ( true === WP_DEBUG )
         {
-            if ( is_array( $log ) || is_object( $log ) )
+            if (is_array($log) || is_object($log))
             {
-                error_log( print_r( $log, true ) );
+                error_log(print_r($log, true));
             }
             else
             {
-                error_log( $log );
+                error_log($log);
             }
         }
     }
@@ -463,27 +467,7 @@ if (!function_exists('wc_get_orders_custom'))
     }
 }
 
-if (!function_exists('pvp_on_payment_complete'))
-{
-	function pvp_on_payment_complete($orderId)
-	{
-		write_log("Payment #".$orderId." completed");
-	}
-}
-
-if (!function_exists('pvp_on_payment_failed'))
-{
-	function pvp_on_payment_failed($orderId, $resultCode, $resultDescr)
-	{
-		write_log("Payment #".$orderId." failed: ".$resultDescr);
-	}
-}
-
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
-
-//Custom actions
-add_filter( 'proxyapi_pvp_payment_complete', 'pvp_on_payment_complete', 10, 1);
-add_filter( 'proxyapi_pvp_payment_failed', 'pvp_on_payment_failed', 10, 3);
