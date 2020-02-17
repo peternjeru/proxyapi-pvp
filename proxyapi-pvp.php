@@ -141,10 +141,10 @@ function init_ProxyAPI_PVP()
 			global $woocommerce;
             $order = new WC_Order( $order_id);
 
-            $requestID = apply_filters('proxyapi_pvp_get_request_id_filter', $order_id);
+            $requestID = strval(apply_filters('proxyapi_pvp_get_request_id_filter', $order_id));
             if (empty($requestID))
             {
-                $requestID = $this->__getRandom(15);
+                $requestID = strval($this->__getRandom(15));
             }
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
             $timestamp = time();
