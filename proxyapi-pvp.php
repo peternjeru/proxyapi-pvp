@@ -183,7 +183,6 @@ function init_ProxyAPI_PVP()
             $response = wp_remote_post($this->endpoint, $options);
             if (!is_wp_error($response))
             {
-                write_log($body);
                 $body = json_decode($response['body']);
                 if(empty($body))
                 {
@@ -254,7 +253,6 @@ function init_ProxyAPI_PVP()
                 write_log("Empty callback");
                 return;
             }
-            write_log($callback);
 
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
