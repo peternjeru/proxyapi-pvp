@@ -32,8 +32,8 @@ function init_ProxyAPI_PVP()
             $this->id = 'proxyapi_pvp_settings'; // payment gateway plugin ID
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->has_fields = false; // in case you need a custom credit card form
-            $this->method_title = __('Pay via Proxy API', 'woocommerce');
-            $this->method_description = __("Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API", 'woocommerce');
+            $this->method_title = 'Pay via Proxy API';
+            $this->method_description = "Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API";
             $this->max_amount = 70000;
 			$this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
 
