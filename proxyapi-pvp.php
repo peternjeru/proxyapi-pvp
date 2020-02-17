@@ -248,6 +248,8 @@ function init_ProxyAPI_PVP()
                 return;
             }
 
+            write_log($callback);
+
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
                 //either on success or failure
@@ -327,6 +329,10 @@ function init_ProxyAPI_PVP()
                     if (!empty($metadata->TransactionTime))
                     {
                         add_post_meta($order->get_id(), "mpesa_transaction_time", $metadata->TransactionTime);
+                    }
+                    if (!empty($metadata->SenderMSISDN))
+                    {
+                        add_post_meta($order->get_id(), "sender_msisdn", $metadata->SenderMSISDN);
                     }
                     if (!empty($metadata->SenderFirstName))
                     {
