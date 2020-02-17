@@ -473,7 +473,7 @@ if (!function_exists('pvp_on_payment_complete'))
 
 if (!function_exists('pvp_on_payment_failed'))
 {
-	function pvp_on_payment_complete($orderId, $resultCode, $resultDescr)
+	function pvp_on_payment_failed($orderId, $resultCode, $resultDescr)
 	{
 		write_log("Payment #".$orderId." failed: ".$resultDescr);
 	}
@@ -486,4 +486,4 @@ add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_
 
 //Custom actions
 add_filter( 'proxyapi_pvp_payment_complete', 'pvp_on_payment_complete', 10, 1);
-add_filter( 'proxyapi_pvp_payment_failed', 'pvp_on_payment_failed', 10, 2);
+add_filter( 'proxyapi_pvp_payment_failed', 'pvp_on_payment_failed', 10, 3);
