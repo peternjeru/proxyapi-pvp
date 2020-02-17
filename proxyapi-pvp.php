@@ -165,7 +165,6 @@ function init_ProxyAPI_PVP()
                 "Origin" => $origin
             );
             $body = wp_json_encode( $body );
-
             $options = [
                 'body'        => $body,
                 'headers'     => [
@@ -175,7 +174,7 @@ function init_ProxyAPI_PVP()
                 'timeout'     => 60,
                 'redirection' => 5,
                 'blocking'    => true,
-                'httpversion' => '1.0',
+                'httpversion' => '1.1',
                 'sslverify'   => false,
                 'data_format' => 'body',
             ];
@@ -205,9 +204,6 @@ function init_ProxyAPI_PVP()
                 }
 
                 $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
-//                $order->add_meta_data("request_id", $requestID, true);
-//                $order->add_meta_data("checkout_request_id", $body->CheckoutRequestID, true);
-
                 add_post_meta($order_id, "request_id", $requestID, true);
                 add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
 
@@ -262,6 +258,7 @@ function init_ProxyAPI_PVP()
                 $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
+					do_action('proxyapi_pvp_payment_complete', $order->get_id());
                     write_log("Payment already processed: ".$order->get_status());
                     return;
                 }
@@ -272,6 +269,7 @@ function init_ProxyAPI_PVP()
                     //failed transaction
                     $resultDesc = intval($callback->Body->stkCallback->ResultDesc);
                     $order->update_status('failed', $resultDesc);
+					do_action('proxyapi_pvp_payment_failed', $order->get_id(), $resultCode, $resultDesc);
                     return;
                 }
                 else
@@ -294,16 +292,15 @@ function init_ProxyAPI_PVP()
                         {
                             $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
                         }
-
                         if (!empty($orderDetails["TransactionDate"]) && !$order->meta_exists('mpesa_transaction_time'))
                         {
                             add_post_meta($order->get_id(), "mpesa_transaction_time", $orderDetails["TransactionDate"]);
                         }
-
                         if(!empty($orderDetails["PhoneNumber"]) && !$order->meta_exists('sender_msisdn'))
                         {
                             add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
                         }
+						do_action('proxyapi_pvp_payment_complete', $order->get_id());
                     }
                 }
             }
@@ -319,12 +316,12 @@ function init_ProxyAPI_PVP()
                 $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
+					do_action('proxyapi_pvp_payment_complete', $order->get_id());
                     return;
                 }
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
                 {
                     $metadata = $callback->Body->pvpCallback->CallbackMetadata;
-                    //set extra data
                     if (!empty($metadata->TransactionID))
                     {
                         $order->payment_complete($metadata->TransactionID);
@@ -345,8 +342,13 @@ function init_ProxyAPI_PVP()
                     {
                         add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
                     }
+					do_action('proxyapi_pvp_payment_complete', $order->get_id());
                 }
             }
+            else
+			{
+				write_log("Unknown callback");
+			}
         }
 
         private function __format_msisdn($msisdn)
@@ -461,7 +463,27 @@ if (!function_exists('wc_get_orders_custom'))
     }
 }
 
+if (!function_exists('pvp_on_payment_complete'))
+{
+	function pvp_on_payment_complete($orderId)
+	{
+		write_log("Payment #".$orderId." completed");
+	}
+}
+
+if (!function_exists('pvp_on_payment_failed'))
+{
+	function pvp_on_payment_complete($orderId, $resultCode, $resultDescr)
+	{
+		write_log("Payment #".$orderId." failed: ".$resultDescr);
+	}
+}
+
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
+
+//Custom actions
+add_filter( 'proxyapi_pvp_payment_complete', 'pvp_on_payment_complete', 10, 1);
+add_filter( 'proxyapi_pvp_payment_failed', 'pvp_on_payment_failed', 10, 2);
