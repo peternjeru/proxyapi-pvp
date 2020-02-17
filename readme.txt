@@ -13,8 +13,6 @@ The Pay via Proxy (PVP in short) extension for WooCommerce enables you to accept
 
 PVP enables one to directly integrate into MPesa using both Lipa na M-Pesa and C2B APIs. It enables you to simplify your checkout process and allow a customer to simply enter their phone number and have the Lipa na MPesa payment prompt sent immediately to their phone numbers, and the responses and callbacks automatically processed by WooCommerce.
 
-You will need an existing M-Pesa Shortcode to work with, and a Proxy API account to get started. Please visit [Proxy API](http://proxyapi.co.ke/) to sign up for a Proxy API account.
-
 For any assistance in your setup, please join the Support group at [Telegram](https://t.me/joinchat/I-jBHE2JnVFAfGpjWRgJbA).
 
 DISCLAIMER
@@ -22,7 +20,7 @@ DISCLAIMER
 This is not an official plugin from M-Pesa, and this plugin does not have any control over the availability of M-Pesa APIs. Any issues not directly caused by or related to the plugin should be addressed to the Safaricom support group.
 
 == Installation ==
-You will need a Proxy API user account to get started. Please visit https://proxyapi.co.ke to sign up for and set up an account. Once you have signed up, follow the instructions below to install the plugin.
+You will need an existing M-Pesa Shortcode to work with, and a Proxy API user account to get started. Please visit https://proxyapi.co.ke to sign up for and set up an account. Once you have signed up, follow the instructions below to install the plugin.
 
 MANUAL INSTALLATION VIA WORDPRESS ADMIN
 1. Download the plugin zip file
