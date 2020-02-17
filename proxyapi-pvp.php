@@ -211,7 +211,7 @@ function init_ProxyAPI_PVP()
                 add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
 
-				do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->CheckoutRequestID);
+				do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->MerchantRequestID, $body->CheckoutRequestID);
 
                 return array(
                     'result' => 'success',
