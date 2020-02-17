@@ -119,12 +119,14 @@ function init_ProxyAPI_PVP()
 
             if( empty($_POST['billing_phone']))
             {
+                //TODO: could be reorder, check for existing phone number
                 wc_add_notice( 'Phone Number is required!', 'error');
                 return false;
             }
 
             if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $_POST['billing_phone']) !== 1)
             {
+                //TODO: could be reorder, check for existing phone number
                 wc_add_notice( 'Please enter a valid Phone Number.', 'error');
                 return false;
             }
@@ -246,8 +248,6 @@ function init_ProxyAPI_PVP()
                 return;
             }
 
-            write_log($callback);
-
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
                 //either on success or failure
@@ -292,6 +292,11 @@ function init_ProxyAPI_PVP()
                             }
                         }
                         write_log($orderDetails);
+                        if(!empty($orderDetails["MpesaReceiptNumber"]))
+                        {
+                            $transactionID = $orderDetails["MpesaReceiptNumber"];
+                            $order->payment_complete($transactionID);
+                        }
                     }
                 }
             }
@@ -299,18 +304,39 @@ function init_ProxyAPI_PVP()
             {
                 //only on success
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
-                $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+                $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+                if (empty($orders))
+                {
+                    return;
+                }
+                $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
                     write_log("Payment already processed: ".$order->get_status());
                     return;
                 }
-            }
-            else
-            {
-                write_log("Invalid Callback:\n");
-                write_log(write_log($json));
-                return;
+                if (!empty($callback->Body->pvpCallback->CallbackMetadata))
+                {
+                    write_log($callback->Body->pvpCallback->CallbackMetadata);
+                    $metadata = $callback->Body->pvpCallback->CallbackMetadata;
+                    //set extra data
+                    if (!empty($metadata->TransactionID))
+                    {
+                        $order->payment_complete($metadata->TransactionID);
+                    }
+                    if (!empty($metadata->TransactionTime))
+                    {
+                        add_post_meta($order->get_id(), "mpesa_transaction_time", $metadata->TransactionTime);
+                    }
+                    if (!empty($metadata->SenderFirstName))
+                    {
+                        add_post_meta($order->get_id(), "sender_first_name", $metadata->SenderFirstName);
+                    }
+                    if (!empty($metadata->SenderLastName))
+                    {
+                        add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
+                    }
+                }
             }
         }
 
