@@ -3,7 +3,7 @@
  * Plugin Name: Woo Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 1.0
+ * Version: 1.1
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: woocommerce-extension
@@ -138,226 +138,241 @@ function init_ProxyAPI_PVP()
 
         public function process_payment($order_id)
         {
-            global $woocommerce;
-            $order = new WC_Order( $order_id);
-
-            $requestID = apply_filters('proxyapi_pvp_get_request_id_filter', $order_id);
-            if (empty($requestID))
+			global $woocommerce;
+        	try
 			{
-				$requestID = $this->__getRandom(15);
+				$order = new WC_Order( $order_id);
+
+				$requestID = apply_filters('proxyapi_pvp_get_request_id_filter', $order_id);
+				if (empty($requestID))
+				{
+					$requestID = $this->__getRandom(15);
+				}
+				$callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
+				$timestamp = time();
+				$amount = intval(floatval($order->get_total()) * 100);
+				$senderMSISDN = $this->__format_msisdn($order->get_billing_phone());
+				$accountRef = strval($order_id);
+
+				$urlparts = parse_url(home_url());
+				$origin = $urlparts['scheme']."://".$urlparts['host'];
+
+				$body = array(
+					"RequestID" => $requestID,
+					"ApiKey" => $this->api_key,
+					"CallbackUrl" => $callbackUrl,
+					"RequestTimestamp" => $timestamp,
+					"Amount" => $amount,
+					"SenderMSISDN" => $senderMSISDN,
+					"AccountReference" => $accountRef,
+					"Origin" => $origin
+				);
+				$body = wp_json_encode( $body );
+				$options = [
+					'body'        => $body,
+					'headers'     => [
+						'Content-Type' => 'application/json',
+						'Accept' => 'application/json'
+					],
+					'timeout'     => 60,
+					'redirection' => 5,
+					'blocking'    => true,
+					'httpversion' => '1.1',
+					'sslverify'   => false,
+					'data_format' => 'body',
+				];
+
+				$response = wp_remote_post($this->endpoint, $options);
+				if (!is_wp_error($response))
+				{
+					$body = json_decode($response['body']);
+					if(empty($body))
+					{
+						$message = 'Lipa na MPesa request failed. Please try again later.';
+						wc_add_notice($message, 'error' );
+						write_log($message.": Empty Response Body from API");
+						return;
+					}
+
+					if (!isset($body->StatusCode) || !isset($body->ResponseCode))
+					{
+						$message = 'Lipa na MPesa request failed. Please try again later.';
+						wc_add_notice($message, 'error' );
+						write_log($message.": Missing mandatory parameters in response from API");
+						return;
+					}
+
+					$responseCode = $body->ResponseCode;
+					$responseDesc = $body->ResponseDescription;
+					if (intval($responseCode) !== 0)
+					{
+						wc_add_notice($responseDesc, 'error' );
+						write_log($responseDesc);
+						do_action('proxyapi_pvp_payment_failed', $order_id, $responseCode, $responseDesc);
+						return;
+					}
+
+					$order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
+					add_post_meta($order_id, "request_id", $requestID, true);
+					add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
+					$woocommerce->cart->empty_cart();
+
+					do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->MerchantRequestID, $body->CheckoutRequestID);
+
+					return array(
+						'result' => 'success',
+						'redirect' => $this->get_return_url($order)
+					);
+				}
+				else
+				{
+					if ($response->has_errors())
+					{
+						$error = $response->get_error_message();
+					}
+					else
+					{
+						$error = "Please try again later.";
+					}
+					wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
+					write_log($error);
+					return;
+				}
 			}
-            $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
-            $timestamp = time();
-            $amount = intval(floatval($order->get_total()) * 100);
-            $senderMSISDN = $this->__format_msisdn($order->get_billing_phone());
-            $accountRef = strval($order_id);
-
-            $urlparts = parse_url(home_url());
-            $origin = $urlparts['scheme']."://".$urlparts['host'];
-
-            $body = array(
-                "RequestID" => $requestID,
-                "ApiKey" => $this->api_key,
-                "CallbackUrl" => $callbackUrl,
-                "RequestTimestamp" => $timestamp,
-                "Amount" => $amount,
-                "SenderMSISDN" => $senderMSISDN,
-                "AccountReference" => $accountRef,
-                "Origin" => $origin
-            );
-            $body = wp_json_encode( $body );
-            $options = [
-                'body'        => $body,
-                'headers'     => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
-                ],
-                'timeout'     => 60,
-                'redirection' => 5,
-                'blocking'    => true,
-                'httpversion' => '1.1',
-                'sslverify'   => false,
-                'data_format' => 'body',
-            ];
-
-            $response = wp_remote_post($this->endpoint, $options);
-            if (!is_wp_error($response))
-            {
-                $body = json_decode($response['body']);
-                if(empty($body))
-                {
-                	$message = 'Lipa na MPesa request failed. Please try again later.';
-                    wc_add_notice($message, 'error' );
-					write_log($message.": Empty Response Body from API");
-                    return;
-                }
-
-                if (!isset($body->StatusCode) || !isset($body->ResponseCode))
-                {
-					$message = 'Lipa na MPesa request failed. Please try again later.';
-					wc_add_notice($message, 'error' );
-					write_log($message.": Missing mandatory parameters in response from API");
-                    return;
-                }
-
-                $responseCode = $body->ResponseCode;
-                $responseDesc = $body->ResponseDescription;
-                if (intval($responseCode) !== 0)
-                {
-					wc_add_notice($responseDesc, 'error' );
-					write_log($responseDesc);
-					do_action('proxyapi_pvp_payment_failed', $order_id, $responseCode, $responseDesc);
-                    return;
-                }
-
-                $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
-                add_post_meta($order_id, "request_id", $requestID, true);
-                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
-                $woocommerce->cart->empty_cart();
-
-				do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->MerchantRequestID, $body->CheckoutRequestID);
-
-                return array(
-                    'result' => 'success',
-                    'redirect' => $this->get_return_url($order)
-                );
-            }
-            else
-            {
-                if ($response->has_errors())
-                {
-                    $error = $response->get_error_message();
-                }
-                else
-                {
-                    $error = "Please try again later.";
-                }
-                wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
-				write_log($error);
-                return;
-            }
+			catch (\Exception $exception)
+			{
+				wc_add_notice( 'Internal Server Error: '.$exception->getMessage(), 'error');
+				write_log($exception->getMessage());
+			}
         }
 
         public function pvp_callback()
         {
-            $json = file_get_contents('php://input');
-            if (empty($json))
-            {
-                write_log("Empty callback");
-                return;
-            }
-
-            $callback = json_decode($json);
-            if (empty($callback))
-            {
-                write_log("Empty callback");
-                return;
-            }
-
-            if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
-            {
-                //called either on success or failure
-                $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
-                $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
-                if (empty($orders))
-                {
-					write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
-                    return;
-                }
-                $order = $orders[0];
-                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
-                {
-					do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                    write_log("Payment already processed: ".$order->get_status());
-                    return;
-                }
-
-                $resultCode = intval($callback->Body->stkCallback->ResultCode);
-                if($resultCode !== 0)
-                {
-                    //failed transaction
-                    $resultDesc = $callback->Body->stkCallback->ResultDesc.".";
-                    $order->update_status('failed', $resultDesc);
-					do_action('proxyapi_pvp_payment_failed', $order->get_id(), $resultCode, $resultDesc);
-                    return;
-                }
-                else
-                {
-                    //success transaction
-                    if (!empty($callback->Body->stkCallback->CallbackMetadata->Item))
-                    {
-                        $items = $callback->Body->stkCallback->CallbackMetadata->Item;
-                        $orderDetails = array();
-                        $paramKey = null;
-                        foreach ($items as $item)
-                        {
-                            if (!empty($item->Name) && !empty($item->Value))
-                            {
-                                $orderDetails[$item->Name] = $item->Value;
-                            }
-                        }
-
-                        if(!empty($orderDetails["MpesaReceiptNumber"]))
-                        {
-                            $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
-                        }
-                        if (!empty($orderDetails["TransactionDate"]) && !$order->meta_exists('mpesa_transaction_time'))
-                        {
-                            add_post_meta($order->get_id(), "mpesa_transaction_time", $orderDetails["TransactionDate"]);
-                        }
-                        if(!empty($orderDetails["PhoneNumber"]) && !$order->meta_exists('sender_msisdn'))
-                        {
-                            add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
-                        }
-						do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                    }
-                }
-            }
-            else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
-            {
-                //called only on success
-                $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
-                $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
-                if (empty($orders))
-                {
-					write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
-                    return;
-                }
-                $order = $orders[0];
-                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
-                {
-					do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                    return;
-                }
-                if (!empty($callback->Body->pvpCallback->CallbackMetadata))
-                {
-                    $metadata = $callback->Body->pvpCallback->CallbackMetadata;
-                    if (!empty($metadata->TransactionID))
-                    {
-                        $order->payment_complete($metadata->TransactionID);
-                    }
-                    if (!empty($metadata->TransactionTime) && !$order->meta_exists('mpesa_transaction_time'))
-                    {
-                        add_post_meta($order->get_id(), "mpesa_transaction_time", $metadata->TransactionTime);
-                    }
-                    if (!empty($metadata->SenderMSISDN) && !$order->meta_exists('sender_msisdn'))
-                    {
-                        add_post_meta($order->get_id(), "sender_msisdn", $metadata->SenderMSISDN);
-                    }
-                    if (!empty($metadata->SenderFirstName) && !$order->meta_exists('sender_first_name'))
-                    {
-                        add_post_meta($order->get_id(), "sender_first_name", $metadata->SenderFirstName);
-                    }
-                    if (!empty($metadata->SenderLastName)&& !$order->meta_exists('sender_last_name'))
-                    {
-                        add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
-                    }
-					do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                }
-            }
-            else
+        	try
 			{
-				write_log("Unknown callback");
+				$json = file_get_contents('php://input');
+				if (empty($json))
+				{
+					write_log("Empty callback");
+					return;
+				}
+
+				$callback = json_decode($json);
+				if (empty($callback))
+				{
+					write_log("Empty callback");
+					return;
+				}
+
+				if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
+				{
+					//called either on success or failure
+					$checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
+					$orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+					if (empty($orders))
+					{
+						write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
+						return;
+					}
+					$order = $orders[0];
+					if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
+					{
+						do_action('proxyapi_pvp_payment_completed', $order->get_id());
+						write_log("Payment already processed: ".$order->get_status());
+						return;
+					}
+
+					$resultCode = intval($callback->Body->stkCallback->ResultCode);
+					if($resultCode !== 0)
+					{
+						//failed transaction
+						$resultDesc = $callback->Body->stkCallback->ResultDesc.".";
+						$order->update_status('failed', $resultDesc);
+						do_action('proxyapi_pvp_payment_failed', $order->get_id(), $resultCode, $resultDesc);
+						return;
+					}
+					else
+					{
+						//success transaction
+						if (!empty($callback->Body->stkCallback->CallbackMetadata->Item))
+						{
+							$items = $callback->Body->stkCallback->CallbackMetadata->Item;
+							$orderDetails = array();
+							$paramKey = null;
+							foreach ($items as $item)
+							{
+								if (!empty($item->Name) && !empty($item->Value))
+								{
+									$orderDetails[$item->Name] = $item->Value;
+								}
+							}
+
+							if(!empty($orderDetails["MpesaReceiptNumber"]))
+							{
+								$order->payment_complete($orderDetails["MpesaReceiptNumber"]);
+							}
+							if (!empty($orderDetails["TransactionDate"]) && !$order->meta_exists('mpesa_transaction_time'))
+							{
+								add_post_meta($order->get_id(), "mpesa_transaction_time", $orderDetails["TransactionDate"]);
+							}
+							if(!empty($orderDetails["PhoneNumber"]) && !$order->meta_exists('sender_msisdn'))
+							{
+								add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
+							}
+							do_action('proxyapi_pvp_payment_completed', $order->get_id());
+						}
+					}
+				}
+				else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
+				{
+					//called only on success
+					$checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
+					$orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+					if (empty($orders))
+					{
+						write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
+						return;
+					}
+					$order = $orders[0];
+					if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
+					{
+						do_action('proxyapi_pvp_payment_completed', $order->get_id());
+						return;
+					}
+					if (!empty($callback->Body->pvpCallback->CallbackMetadata))
+					{
+						$metadata = $callback->Body->pvpCallback->CallbackMetadata;
+						if (!empty($metadata->TransactionID))
+						{
+							$order->payment_complete($metadata->TransactionID);
+						}
+						if (!empty($metadata->TransactionTime) && !$order->meta_exists('mpesa_transaction_time'))
+						{
+							add_post_meta($order->get_id(), "mpesa_transaction_time", $metadata->TransactionTime);
+						}
+						if (!empty($metadata->SenderMSISDN) && !$order->meta_exists('sender_msisdn'))
+						{
+							add_post_meta($order->get_id(), "sender_msisdn", $metadata->SenderMSISDN);
+						}
+						if (!empty($metadata->SenderFirstName) && !$order->meta_exists('sender_first_name'))
+						{
+							add_post_meta($order->get_id(), "sender_first_name", $metadata->SenderFirstName);
+						}
+						if (!empty($metadata->SenderLastName)&& !$order->meta_exists('sender_last_name'))
+						{
+							add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
+						}
+						do_action('proxyapi_pvp_payment_completed', $order->get_id());
+					}
+				}
+				else
+				{
+					write_log("Unknown callback");
+				}
+			}
+			catch (\Exception $exception)
+			{
+				write_log("Fatal Error: ".$exception->getMessage());
 			}
         }
 
