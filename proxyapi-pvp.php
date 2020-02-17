@@ -201,7 +201,7 @@ function init_ProxyAPI_PVP()
                 }
 
                 $responseCode = $body->ResponseCode;
-                $responseDesc = $body->ResponseDescription;
+                $responseDesc = $body->ResponseDesc;
                 if (intval($responseCode) !== 0)
                 {
                     wc_add_notice($responseDesc, 'error' );
