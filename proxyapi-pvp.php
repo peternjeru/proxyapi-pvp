@@ -289,18 +289,18 @@ function init_ProxyAPI_PVP()
                                 $orderDetails[$item->Name] = $item->Value;
                             }
                         }
-                        write_log($orderDetails);
+
                         if(!empty($orderDetails["MpesaReceiptNumber"]))
                         {
                             $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
                         }
 
-                        if (!empty($orderDetails["TransactionDate"]))
+                        if (!empty($orderDetails["TransactionDate"]) && !$order->meta_exists('mpesa_transaction_time'))
                         {
                             add_post_meta($order->get_id(), "mpesa_transaction_time", $orderDetails["TransactionDate"]);
                         }
 
-                        if(!empty($orderDetails["PhoneNumber"]))
+                        if(!empty($orderDetails["PhoneNumber"]) && !$order->meta_exists('sender_msisdn'))
                         {
                             add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
                         }
@@ -319,31 +319,29 @@ function init_ProxyAPI_PVP()
                 $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
-                    write_log("Payment already processed: ".$order->get_status());
                     return;
                 }
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
                 {
-                    write_log($callback->Body->pvpCallback->CallbackMetadata);
                     $metadata = $callback->Body->pvpCallback->CallbackMetadata;
                     //set extra data
                     if (!empty($metadata->TransactionID))
                     {
                         $order->payment_complete($metadata->TransactionID);
                     }
-                    if (!empty($metadata->TransactionTime))
+                    if (!empty($metadata->TransactionTime) && !$order->meta_exists('mpesa_transaction_time'))
                     {
                         add_post_meta($order->get_id(), "mpesa_transaction_time", $metadata->TransactionTime);
                     }
-                    if (!empty($metadata->SenderMSISDN))
+                    if (!empty($metadata->SenderMSISDN) && !$order->meta_exists('sender_msisdn'))
                     {
                         add_post_meta($order->get_id(), "sender_msisdn", $metadata->SenderMSISDN);
                     }
-                    if (!empty($metadata->SenderFirstName))
+                    if (!empty($metadata->SenderFirstName) && !$order->meta_exists('sender_first_name'))
                     {
                         add_post_meta($order->get_id(), "sender_first_name", $metadata->SenderFirstName);
                     }
-                    if (!empty($metadata->SenderLastName))
+                    if (!empty($metadata->SenderLastName)&& !$order->meta_exists('sender_last_name'))
                     {
                         add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
                     }
