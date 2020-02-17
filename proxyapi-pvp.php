@@ -272,7 +272,7 @@ function init_ProxyAPI_PVP()
                 if($resultCode !== 0)
                 {
                     //failed transaction
-                    $resultDesc = $callback->Body->stkCallback->ResultDesc;
+                    $resultDesc = $callback->Body->stkCallback->ResultDesc.".";
                     $order->update_status('failed', $resultDesc);
 					do_action('proxyapi_pvp_payment_failed', $order->get_id(), $resultCode, $resultDesc);
                     return;
