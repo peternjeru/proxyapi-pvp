@@ -35,6 +35,7 @@ function init_ProxyAPI_PVP()
             $this->method_title = __('Pay via Proxy API', 'woocommerce');
             $this->method_description = __("Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API", 'woocommerce');
             $this->max_amount = 70000;
+			$this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
 
             $this->supports = array(
                 'products'
@@ -150,7 +151,6 @@ function init_ProxyAPI_PVP()
             $urlparts = parse_url(home_url());
             $origin = $urlparts['scheme']."://".$urlparts['host'];
 
-            $endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
             $body = array(
                 "RequestID" => $requestID,
                 "ApiKey" => $this->api_key,
@@ -176,7 +176,7 @@ function init_ProxyAPI_PVP()
                 'data_format' => 'body',
             ];
 
-            $response = wp_remote_post( $endpoint, $options);
+            $response = wp_remote_post($this->endpoint, $options);
             if (!is_wp_error($response))
             {
                 $body = json_decode($response['body']);
