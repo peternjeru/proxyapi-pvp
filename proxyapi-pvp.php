@@ -252,7 +252,12 @@ function init_ProxyAPI_PVP()
             {
                 //either on success or failure
                 $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
-                $order = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+                $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
+                if (empty($orders))
+                {
+                    return;
+                }
+                $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
                     write_log("Payment already processed: ".$order->get_status());
