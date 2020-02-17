@@ -1,15 +1,16 @@
 <?php
 /**
- * Plugin Name: Pay via ProxyAPI
- * Plugin URI: http://woocommerce.com/products/pay-via-proxyapi/
- * Description: Accept Safaricom Lipa na M-Pesa payments via Proxy API using PVP's Smart Payment Button.
- * Version: 1.0.0
+ * Plugin Name: WooCommerce Pay via ProxyAPI
+ * Plugin URI: http://woocommerce.com/products/woocommerce-pay-via-proxyapi/
+ * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
+ * Version: 1.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: woocommerce-extension
  *
  * WC requires at least: 3.9.2
  * WC tested up to: 3.9.2
+ * Requires at least: 5.3
  *
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -105,6 +106,7 @@ function init_ProxyAPI_PVP()
                 return false;
             }
 
+           //invalid API Key format
             if(preg_match('/^[\d]{10}\-[\w]{20}$/', $this->api_key) !== 1)
             {
                 wc_add_notice( 'API Key not found. Please contact the Administrator.', 'error');
@@ -403,30 +405,6 @@ function add_ProxyAPI_PVP( $gateways)
     return $gateways;
 }
 
-if (!function_exists( 'remove_fields'))
-{
-    function remove_fields( $fields )
-    {
-        unset( $fields['billing']['billing_company'] ); // remove company field
-        unset( $fields['billing']['billing_country'] );
-        unset( $fields['billing']['billing_address_1'] );
-        unset( $fields['billing']['billing_address_2'] );
-        unset( $fields['billing']['billing_city'] );
-        unset( $fields['billing']['billing_state'] ); // remove state field
-        unset( $fields['billing']['billing_postcode'] ); // remove zip code field
-
-        unset( $fields['shipping']['shipping_company'] );
-        unset( $fields['shipping']['shipping_last_name'] );
-        unset( $fields['shipping']['shipping_country'] );
-        unset( $fields['shipping']['shipping_address_2'] );
-        unset( $fields['shipping']['shipping_city'] );
-        unset( $fields['shipping']['shipping_state'] );
-        unset( $fields['shipping']['shipping_postcode'] );
-
-        return $fields;
-    }
-}
-
 if (!function_exists('write_log'))
 {
     function write_log($log)
@@ -469,5 +447,4 @@ if (!function_exists('wc_get_orders_custom'))
 
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
-add_filter( 'woocommerce_checkout_fields' , 'remove_fields', 9999);
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
