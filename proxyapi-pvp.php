@@ -311,6 +311,7 @@ function init_ProxyAPI_PVP()
                             add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
                         }
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                        write_log("Order completed successfully");
                     }
                 }
             }
@@ -328,6 +329,7 @@ function init_ProxyAPI_PVP()
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
                     do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                    write_log("Order already completed");
                     return;
                 }
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
@@ -354,6 +356,7 @@ function init_ProxyAPI_PVP()
                         add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
                     }
                     do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                    write_log("Order completed successfully");
                 }
             }
             else
