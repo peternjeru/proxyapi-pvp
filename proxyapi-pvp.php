@@ -254,6 +254,7 @@ function init_ProxyAPI_PVP()
                 write_log("Empty callback");
                 return;
             }
+            write_log($callback);
 
             if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
             {
