@@ -282,22 +282,27 @@ function init_ProxyAPI_PVP()
                         $items = $callback->Body->stkCallback->CallbackMetadata->Item;
                         $orderDetails = array();
                         $paramKey = null;
-                        foreach ($items as $key=>$value)
+                        foreach ($items as $item)
                         {
-                            if($key === "Name")
+                            if (!empty($item->Name) && !empty($item->Value))
                             {
-                                $paramKey = $value;
-                            }
-                            else
-                            {
-                                $orderDetails[$paramKey] = $value;
+                                $orderDetails[$item->Name] = $item->Value;
                             }
                         }
                         write_log($orderDetails);
                         if(!empty($orderDetails["MpesaReceiptNumber"]))
                         {
-                            $transactionID = $orderDetails["MpesaReceiptNumber"];
-                            $order->payment_complete($transactionID);
+                            $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
+                        }
+
+                        if (!empty($orderDetails["TransactionDate"]))
+                        {
+                            add_post_meta($order->get_id(), "mpesa_transaction_time", $orderDetails["TransactionDate"]);
+                        }
+
+                        if(!empty($orderDetails["PhoneNumber"]))
+                        {
+                            add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
                         }
                     }
                 }
