@@ -21,6 +21,7 @@ DISCLAIMER
 
 This is not an official plugin from M-Pesa, and this plugin does not have any control over the availability of M-Pesa APIs. Any issues not directly caused by or related to the plugin should be addressed to the Safaricom support group.
 
+
 == Installation ==
 You will need an existing M-Pesa Shortcode to work with, and a Proxy API user account to get started. Please visit https://proxyapi.co.ke to sign up for and set up an account. Once you have signed up, follow the instructions below to install the plugin.
 
@@ -56,9 +57,11 @@ No, the plugin places the transaction details directly as metadata into the orde
 = Does the plugin automatically complete transactions? =
 Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID. as its own unique Transaction ID and marked as complete.
 
+
 == Changelog ==
 = 1.0 =
 This is the first release.
+
 
 == Upgrade Notice ==
 This is the first release.
