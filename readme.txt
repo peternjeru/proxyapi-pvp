@@ -11,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
 
 == Description ==
-The Pay via Proxy (PVP in short) extension for WooCommerce enables you to accept payments for Safaricom\\\'s M-Pesa payment gateway via Proxy API.
+The Pay via Proxy (PVP in short) extension for WooCommerce enables you to accept payments for Safaricom's M-Pesa payment gateway via Proxy API.
 
 PVP enables one to directly integrate into MPesa using both Lipa na M-Pesa and C2B APIs. It enables you to simplify your checkout process and allow a customer to simply enter their phone number and have the Lipa na MPesa payment prompt sent immediately to their phone numbers, and the responses and callbacks automatically processed by WooCommerce.
 
@@ -36,7 +36,7 @@ You shall need to enter the API Key. To get the API Key:
 1. Log into the portal at https://api.proxyapi.co.ke
 2. Navigate to Shortcodes on the main menu
 3. Double click on the Shortcode you wish to use for PVP
-4. Make sure the \"Use Shortcode for Pay via ProxyAPI\" checkbox is selected and the settings saved on selection.
+4. Make sure the "Use Shortcode for Pay via ProxyAPI" checkbox is selected and the settings saved on selection.
 5. At the bottom of the page, you will see the API Key field. You will see your API key in the text field.
 
 After fetching the API key, enter the key in the API Key field in the WooCommerce PVP Settings page, then save the changes.
