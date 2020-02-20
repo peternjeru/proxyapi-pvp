@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Pay via ProxyAPI
- * Plugin URI: http://woocommerce.com/products/pay-via-proxyapi/
+ * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
  * Version: 1.0
  * Author: maxp555
