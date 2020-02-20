@@ -296,11 +296,6 @@ function init_ProxyAPI_PVP()
                                 $orderDetails[$item->Name] = $item->Value;
                             }
                         }
-
-                        if(!empty($orderDetails["MpesaReceiptNumber"]))
-                        {
-                            $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
-                        }
                         if (!empty($orderDetails["TransactionDate"]) && !$order->meta_exists('mpesa_transaction_time'))
                         {
                             add_post_meta($order->get_id(), "mpesa_transaction_time", $orderDetails["TransactionDate"]);
@@ -309,8 +304,12 @@ function init_ProxyAPI_PVP()
                         {
                             add_post_meta($order->get_id(), "sender_msisdn", $orderDetails["PhoneNumber"]);
                         }
-                        do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                        write_log("Order completed successfully");
+                        if(!empty($orderDetails["MpesaReceiptNumber"]))
+                        {
+                            $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
+                            do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                            write_log("Order completed successfully");
+                        }
                     }
                 }
             }
@@ -354,8 +353,8 @@ function init_ProxyAPI_PVP()
                     {
                         $order->payment_complete($metadata->TransactionID);
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                        write_log("Order completed successfully");
                     }
-                    write_log("Order completed successfully");
                 }
             }
             else
