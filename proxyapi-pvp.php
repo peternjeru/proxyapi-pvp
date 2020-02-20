@@ -334,10 +334,6 @@ function init_ProxyAPI_PVP()
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
                 {
                     $metadata = $callback->Body->pvpCallback->CallbackMetadata;
-                    if (!empty($metadata->TransactionID))
-                    {
-                        $order->payment_complete($metadata->TransactionID);
-                    }
                     if (!empty($metadata->TransactionTime) && !$order->meta_exists('mpesa_transaction_time'))
                     {
                         add_post_meta($order->get_id(), "mpesa_transaction_time", $metadata->TransactionTime);
@@ -354,7 +350,11 @@ function init_ProxyAPI_PVP()
                     {
                         add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
                     }
-                    do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                    if (!empty($metadata->TransactionID))
+                    {
+                        $order->payment_complete($metadata->TransactionID);
+                        do_action('proxyapi_pvp_payment_completed', $order->get_id());
+                    }
                     write_log("Order completed successfully");
                 }
             }
