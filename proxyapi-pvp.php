@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 1.0
+ * Version: 1.1
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -35,7 +35,7 @@ function init_ProxyAPI_PVP()
             $this->method_title = 'Pay via Proxy API';
             $this->method_description = "Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API";
             $this->max_amount = 70000;
-			$this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
+            $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
 
             $this->supports = array(
                 'products'
@@ -101,13 +101,13 @@ function init_ProxyAPI_PVP()
                 return false;
             }
 
-           if(empty($this->api_key))
+            if(empty($this->api_key))
             {
                 wc_add_notice( 'API Key not found. Please contact the Administrator.', 'error');
                 return false;
             }
 
-           //invalid API Key format
+            //invalid API Key format
             if(preg_match('/^[\d]{10}\-[\w]{20}$/', $this->api_key) !== 1)
             {
                 wc_add_notice( 'API Key not found. Please contact the Administrator.', 'error');
@@ -138,7 +138,7 @@ function init_ProxyAPI_PVP()
 
         public function process_payment($order_id)
         {
-			global $woocommerce;
+            global $woocommerce;
             $order = new WC_Order( $order_id);
 
             $requestID = strval(apply_filters('proxyapi_pvp_get_request_id_filter', $order_id));
@@ -148,7 +148,7 @@ function init_ProxyAPI_PVP()
             }
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
             $timestamp = time();
-            $amount = intval(floatval($order->get_total()) * 100);
+            $amount = floatval($order->get_total());
             $senderMSISDN = $this->__format_msisdn($order->get_billing_phone());
             $accountRef = strval($order_id);
 

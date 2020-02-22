@@ -8,14 +8,15 @@ Stable tag: trunk
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
+Accept Safaricom Lipa na M-Pesa payments using Pay via ProxyAPI
+
 
 == Description ==
-The Pay via Proxy (PVP in short) extension for WooCommerce enables you to accept payments for Safaricom's M-Pesa payment gateway via Proxy API.
+The Pay via ProxyAPI (PVP in short) extension for WooCommerce enables you to accept payments for Safaricom's M-Pesa payment gateway via ProxyAPI.
 
 PVP enables one to directly integrate into MPesa using both Lipa na M-Pesa and C2B APIs. It enables you to simplify your checkout process and allow a customer to simply enter their phone number and have the Lipa na MPesa payment prompt sent immediately to their phone numbers, and the responses and callbacks automatically processed by WooCommerce.
 
-For any assistance in your setup, please join the Support group at [Telegram](https://t.me/joinchat/I-jBHE2JnVFAfGpjWRgJbA).
+For any assistance in your setup, please join the Support group at [Telegram](https://t.me/joinchat/I-jBHE2JnVFAfGpjWRgJbA) or drop your query in the [Support Section](https://wordpress.org/support/plugin/woo-pay-via-proxyapi/). A response will be given asap.
 
 DISCLAIMER
 
@@ -23,13 +24,24 @@ This is not an official plugin from M-Pesa, and this plugin does not have any co
 
 
 == Installation ==
-You will need an existing M-Pesa Shortcode to work with, and a Proxy API user account to get started. Please visit https://proxyapi.co.ke to sign up for and set up an account. Once you have signed up, follow the instructions below to install the plugin.
+You will need an existing M-Pesa Shortcode to work with, and a ProxyAPI user account to get started. Please visit https://proxyapi.co.ke to sign up for and set up an account. Once you have signed up, follow the instructions below to install the plugin.
+
+AUTOMATIC INSTALLATION
+- Login to your WordPress Dashboard.
+- Click on "Plugins > Add New" from the left menu.
+- In the search box type "Pay via ProxyAPI".
+- Click on Install Now on Pay via ProxyAPI to install the plugin on your site.
+- Confirm the installation.
+- Activate the plugin.
+- Click on "WooCommerce > Settings" from the left menu and click the "Payments" or "Checkout" tab.
+- Click on the Pay via ProxyAPI option from the available Payment Options.
+- Configure your Pay via ProxyAPI settings accordingly. See below for configuration instructions.
 
 MANUAL INSTALLATION VIA WORDPRESS ADMIN
 1. Download the plugin zip file
 2. Login to your WordPress Admin. Click on “Plugins > Add New” from the left hand menu.
 3. Click on the “Upload” option, then click “Choose File” to select the zip file from your computer. Once selected, press “OK” and press the “Install Now” button.
-4. After installation, go to WooCommerce -> Settings -> Payments tab (or equivalent for your WooCommerce version). You will see Pay via Proxy API (PVP) as part of the available payment checkout options. Activate the plugin, then configure it. See below for configuration instructions.
+4. After installation, go to WooCommerce -> Settings -> Payments tab (or equivalent for your WooCommerce version). You will see Pay via ProxyAPI (PVP) as part of the available payment checkout options. Activate the plugin, then configure it. See below for configuration instructions.
 
 CONFIGURING THE PLUGIN
 You shall need to enter the API Key. To get the API Key:
@@ -46,13 +58,13 @@ After fetching the API key, enter the key in the API Key field in the WooCommerc
 Use PHP v5.6 or later.
 
 = Can someone on Daraja API use this plugin? =
-No, you need to be aboard Proxy API to be able to use this plugin.
+No, you need to be aboard ProxyAPI to be able to use this plugin.
 
 = Does this plugin process M-Pesa callbacks? =
 Yes, the plugin is set up to directly receive callbacks from both Daraja and ProxyAPI and process each separately for the same transaction
 
 = Does this plugin have a separate M-Pesa transactions table? =
-No, the plugin places the transaction details directly as metadata into the order. This enables for a simpler and more convenient way to view MPesa results
+No, the plugin places the transaction details directly as metadata into the order. This enables for a simpler and more convenient way to view MPesa results. But in case you need to check all transactions or get a separate list of transactions, you have access to the [ProxyAPI portal](https://api.proxyapi.co.ke/) where you get a list of all Pay via ProxyAPI transactions sent through it and their current status (whether they were succesful or not).
 
 = Does the plugin automatically complete transactions? =
 Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID. as its own unique Transaction ID and marked as complete.
