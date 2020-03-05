@@ -406,9 +406,8 @@ function init_ProxyAPI_PVP()
                 $responseDesc = $body->ResponseDesc;
                 if (intval($responseCode) !== 0)
                 {
-                    return "Unable to fetch Transactions.";
+                    return "Unable to fetch Transactions".(empty($responseDesc) ? "" : ": ".$responseDesc);
                 }
-                write_log($body);
                 $data = $body->Data;
                 $html = '<table class="widefat">
                 <thead>
@@ -470,9 +469,7 @@ function init_ProxyAPI_PVP()
                     ++$index;
                 }
 
-                $html .= '</tbody>
-                </table>';
-
+                $html .= '</tbody></table>';
                 echo $html;
             }
             else
