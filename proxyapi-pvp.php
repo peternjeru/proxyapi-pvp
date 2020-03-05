@@ -19,7 +19,6 @@
 defined( 'ABSPATH' ) or die( 'Not allowed' );
 
 require "proxyapi-pvp-uninstall.php";
-require (WC()->plugin_path().'/includes/admin/reports/class-wc-admin-report.php');
 
 function init_ProxyAPI_PVP()
 {
