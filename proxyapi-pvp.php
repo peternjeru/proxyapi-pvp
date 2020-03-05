@@ -19,6 +19,7 @@
 defined( 'ABSPATH' ) or die( 'Not allowed' );
 
 require "proxyapi-pvp-uninstall.php";
+require (WC()->plugin_path().'/includes/admin/reports/class-wc-admin-report.php');
 
 function init_ProxyAPI_PVP()
 {
@@ -447,6 +448,31 @@ if (!function_exists('wc_get_orders_custom'))
     }
 }
 
+if (!function_exists('proxyapi_mpesa_transactions'))
+{
+    function proxyapi_mpesa_transactions()
+    {
+
+    }
+}
+
+if (!function_exists('proxyapi_mpesa_report'))
+{
+    function proxyapi_mpesa_report($reports)
+    {
+        $reports['pvp_mpesa'] = array(
+            'M-Pesa Transactions' => array(
+                'title' => __("MPesa Transactions", 'woocommerce'),
+                'description' => "List of all received M-Pesa Transactions",
+                'hide_title' => false,
+                'callback' => 'proxyapi_mpesa_transactions'
+            )
+        );
+        return $reports;
+    }
+}
+
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
+add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report', 10, 1);
