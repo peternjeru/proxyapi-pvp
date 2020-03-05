@@ -36,6 +36,7 @@ function init_ProxyAPI_PVP()
             $this->method_description = "Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API";
             $this->max_amount = 70000;
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
+            $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
 
             $this->supports = array(
                 'products'
@@ -361,9 +362,6 @@ function init_ProxyAPI_PVP()
 
         public function proxyapi_mpesa_transactions()
         {
-            $endpoint = $this->endpoint;
-            $this->endpoint = "http://localhost/projects/proxyapi/pvp/report/0/50";
-
             if (!function_exists( 'wp_get_current_user'))
             {
                 return "Unable to fetch Transactions. Please check on your WordPress installation";
@@ -390,10 +388,8 @@ function init_ProxyAPI_PVP()
                 'data_format' => 'body',
             ];
 
-            $response = wp_remote_post($endpoint, $options);
+            $response = wp_remote_post($this->reportEndpoint, $options);
             write_log($response);
-            $this->endpoint = $endpoint;
-
             echo "Blank";
         }
 
