@@ -359,6 +359,36 @@ function init_ProxyAPI_PVP()
             }
         }
 
+        public function proxyapi_mpesa_transactions()
+        {
+            $endpoint = $this->endpoint;
+            $this->endpoint = "http://localhost/projects/proxyapi/pvp/report/0/50";
+
+            $body = wp_json_encode(array(
+                "ApiKey" => $this->api_key
+            ));
+
+            $options = [
+                'body'        => $body,
+                'headers'     => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                'timeout'     => 60,
+                'redirection' => 3,
+                'blocking'    => true,
+                'httpversion' => '1.1',
+                'sslverify'   => false,
+                'data_format' => 'body',
+            ];
+
+            $response = wp_remote_post($endpoint, $options);
+            write_log($response);
+            $this->endpoint = $endpoint;
+
+            echo "Blank";
+        }
+
         private function __format_msisdn($msisdn)
         {
             //allow local numbers only
@@ -447,14 +477,6 @@ if (!function_exists('wc_get_orders_custom'))
     }
 }
 
-if (!function_exists('proxyapi_mpesa_transactions'))
-{
-    function proxyapi_mpesa_transactions()
-    {
-        echo "Blank";
-    }
-}
-
 if (!function_exists('proxyapi_mpesa_report'))
 {
     function proxyapi_mpesa_report($reports)
@@ -466,7 +488,7 @@ if (!function_exists('proxyapi_mpesa_report'))
                     'title' => __('Received M-Pesa Transactions','woocommerce'),
                     'description' => "Received M-Pesa Transactions",
                     'hide_title' => true,
-                    'callback' => 'proxyapi_mpesa_transactions'
+                    'callback' => array('ProxyAPI_PVP', 'proxyapi_mpesa_transactions')
                 )
             )
         );
