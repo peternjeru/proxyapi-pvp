@@ -463,10 +463,10 @@ if (!function_exists('proxyapi_mpesa_report'))
             'title' => __('M-Pesa', 'woocommerce'),
             'reports' => array(
                 'received_mpesa_transactions' => array(
-                    'title' => __('Received MPesa Transactions','woocommerce'),
-                    'description' => "List of all received M-Pesa Transactions",
+                    'title' => __('Received M-Pesa Transactions','woocommerce'),
+                    'description' => "Received M-Pesa Transactions",
                     'hide_title' => true,
-                    'callback' => array( __CLASS__, 'proxyapi_mpesa_transactions')
+                    'callback' => 'proxyapi_mpesa_transactions'
                 )
             )
         );
