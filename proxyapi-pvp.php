@@ -459,17 +459,12 @@ if (!function_exists('proxyapi_mpesa_report'))
 {
     function proxyapi_mpesa_report($reports)
     {
-        $pvpTransactions = array(
-            'mpesa_transactions' => array(
-                'title' => __('MPesa Transactions','woocommerce'),
-                'description' => "List of all received M-Pesa Transactions",
-                'hide_title' => true,
-                'callback' => 'proxyapi_mpesa_transactions'
-            )
+        $reports['mpesa_transactions'] = array(
+            'title' => __('MPesa Transactions','woocommerce'),
+            'description' => "List of all received M-Pesa Transactions",
+            'hide_title' => true,
+            'callback' => 'proxyapi_mpesa_transactions'
         );
-
-        write_log(print_r($reports, true));
-//        $reports['orders']['reports'] = array_merge($reports['orders']['reports'], $pvpTransactions);
         return $reports;
     }
 }
