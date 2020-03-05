@@ -426,9 +426,12 @@ function init_ProxyAPI_PVP()
                 </thead>
                 <tbody>';
 
+                $index = 0;
                 foreach ($data as $transaction)
                 {
-                    $html .= '<tr>
+                    if($index % 2 == 0)
+                    {
+                        $html .= '<tr class="alternate">
                         <td>'.$transaction->CheckoutRequestID.'</td>
                         <td>'.$transaction->MpesaTransactionID.'</td>
                         <td>'.$transaction->Amount.'</td>
@@ -439,6 +442,22 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->TransactionTime.'</td>
                         <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
                     </tr>';
+                    }
+                    else
+                    {
+                        $html .= '<tr>
+                        <td>'.$transaction->CheckoutRequestID.'</td>
+                        <td>'.$transaction->MpesaTransactionID.'</td>
+                        <td>'.$transaction->Amount.'</td>
+                        <td>'.$transaction->AccountRef.'</td>
+                        <td>'.$transaction->SenderMSISDN.'</td>
+                        <td>'.$transaction->SenderFirstName.'</td>
+                        <td>'.$transaction->SenderLastName.'</td>
+                        <td>'.$transaction->TransactionTime.'</td>
+                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                    </tr>';
+                    }
+                    ++$index;
                 }
 
                 $html .= '</tbody>
