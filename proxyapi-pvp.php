@@ -389,7 +389,27 @@ function init_ProxyAPI_PVP()
             ];
 
             $response = wp_remote_post($this->reportEndpoint, $options);
-            write_log($response);
+            if (!is_wp_error($response))
+            {
+                $body = json_decode($response['body']);
+                if(empty($body))
+                {
+                    return "Unable to fetch Transactions.";
+                }
+
+                if (!isset($body->StatusCode) || !isset($body->ResponseCode))
+                {
+                    return "Unable to fetch Transactions.";
+                }
+
+                $responseCode = $body->ResponseCode;
+                $responseDesc = $body->ResponseDesc;
+                if (intval($responseCode) !== 0)
+                {
+                    return "Unable to fetch Transactions.";
+                }
+                write_log($body);
+            }
             echo "Blank";
         }
 
