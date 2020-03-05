@@ -364,8 +364,16 @@ function init_ProxyAPI_PVP()
             $endpoint = $this->endpoint;
             $this->endpoint = "http://localhost/projects/proxyapi/pvp/report/0/50";
 
+            if (!function_exists( 'wp_get_current_user'))
+            {
+                return "Unable to fetch Transactions. Please check on your WordPress installation";
+            }
+            $user = wp_get_current_user();
+            $userId = isset($user->ID) ? (int) $user->ID : 0;
+
             $body = wp_json_encode(array(
-                "ApiKey" => $this->api_key
+                "APIKey" => $this->api_key,
+                "UserID" => $userId
             ));
 
             $options = [
