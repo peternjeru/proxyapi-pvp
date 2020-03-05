@@ -429,8 +429,16 @@ function init_ProxyAPI_PVP()
                 $index = 0;
                 foreach ($data as $transaction)
                 {
-                    //2020 03 05 11 22 29
-                    $date = date_create_from_format("YmdHis", $transaction->TransactionTime);
+                    if (!empty($transaction->TransactionTime))
+                    {
+                        $date = date_create_from_format("YmdHis", $transaction->TransactionTime);
+                        $formatted = $date->format('Y-m-d H:i:s');
+                    }
+                    else
+                    {
+                        $formatted = "--";
+                    }
+
                     if($index % 2 == 0)
                     {
                         $html .= '<tr class="alternate">
@@ -441,7 +449,7 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderMSISDN.'</td>
                         <td>'.$transaction->SenderFirstName.'</td>
                         <td>'.$transaction->SenderLastName.'</td>
-                        <td>'.$date->format('Y-m-d H:i:s').'</td>
+                        <td>'.$formatted.'</td>
                         <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
                     </tr>';
                     }
@@ -455,7 +463,7 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderMSISDN.'</td>
                         <td>'.$transaction->SenderFirstName.'</td>
                         <td>'.$transaction->SenderLastName.'</td>
-                        <td>'.$date->format('Y-m-d H:i:s').'</td>
+                        <td>'.$formatted.'</td>
                         <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
                     </tr>';
                     }
