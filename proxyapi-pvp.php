@@ -459,16 +459,14 @@ if (!function_exists('proxyapi_mpesa_report'))
 {
     function proxyapi_mpesa_report($reports)
     {
-        $pvpTransactions = array(
-            'M-Pesa Transactions' => array(
+        $reports["orders"][] = array(
+            'mpesa_transactions' => array(
                 'title' => __('MPesa Transactions','woocommerce'),
                 'description' => "List of all received M-Pesa Transactions",
                 'hide_title' => true,
                 'callback' => 'proxyapi_mpesa_transactions'
             )
         );
-
-        $reports['orders']['reports'] = array_merge($reports['orders']['reports'], $pvpTransactions);
         return $reports;
     }
 }
