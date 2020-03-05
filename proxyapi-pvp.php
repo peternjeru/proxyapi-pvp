@@ -496,7 +496,7 @@ if (!function_exists('proxyapi_mpesa_report'))
                     'title' => __('Received M-Pesa Transactions','woocommerce'),
                     'description' => "Received M-Pesa Transactions",
                     'hide_title' => true,
-                    'callback' => array('ProxyAPI_PVP', 'proxyapi_mpesa_transactions')
+                    'callback' => array(new ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
                 )
             )
         );
