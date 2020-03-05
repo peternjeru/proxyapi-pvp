@@ -451,7 +451,7 @@ if (!function_exists('proxyapi_mpesa_transactions'))
 {
     function proxyapi_mpesa_transactions()
     {
-
+        echo "Blank";
     }
 }
 
@@ -459,11 +459,11 @@ if (!function_exists('proxyapi_mpesa_report'))
 {
     function proxyapi_mpesa_report($reports)
     {
-        $reports['pvp_mpesa'] = array(
+        $reports['proxyapi_pvp_mpesa'] = array(
             'M-Pesa Transactions' => array(
-                'title' => __("MPesa Transactions", 'woocommerce'),
+                'title' => __('MPesa Transactions','woocommerce'),
                 'description' => "List of all received M-Pesa Transactions",
-                'hide_title' => false,
+                'hide_title' => true,
                 'callback' => 'proxyapi_mpesa_transactions'
             )
         );
