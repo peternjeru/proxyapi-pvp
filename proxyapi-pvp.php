@@ -409,8 +409,47 @@ function init_ProxyAPI_PVP()
                     return "Unable to fetch Transactions.";
                 }
                 write_log($body);
+                $data = $body->Data;
+                $html = '<table class="widefat">
+                <thead>
+                    <tr>
+                        <th><strong>Checkout Request ID</strong></th>
+                        <th><strong>MPesa Transaction ID</strong></th>
+                        <th><strong>Amount</strong></th>
+                        <th><strong>Order #</strong></th>
+                        <th><strong>Sender MSISDN</strong></th>
+                        <th><strong>Sender First Name</strong></th>
+                        <th><strong>Sender Last Name</strong></th>
+                        <th><strong>MPesa Transaction Time</strong></th>
+                        <th><strong>Confirmed</strong></th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+                foreach ($data as $transaction)
+                {
+                    $html .= '<tr>
+                        <td>'.$transaction->CheckoutRequestID.'</td>
+                        <td>'.$transaction->MpesaTransactionID.'</td>
+                        <td>'.$transaction->Amount.'</td>
+                        <td>'.$transaction->AccountRef.'</td>
+                        <td>'.$transaction->SenderMSISDN.'</td>
+                        <td>'.$transaction->SenderFirstName.'</td>
+                        <td>'.$transaction->SenderLastName.'</td>
+                        <td>'.$transaction->TransactionTime.'</td>
+                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                    </tr>';
+                }
+
+                $html .= '</tbody>
+                </table>';
+
+                echo $html;
             }
-            echo "Blank";
+            else
+            {
+                echo "No transactions found";
+            }
         }
 
         private function __format_msisdn($msisdn)
