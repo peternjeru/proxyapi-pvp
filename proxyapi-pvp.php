@@ -477,4 +477,4 @@ if (!function_exists('proxyapi_mpesa_report'))
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
-add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report', 10, 1);
+add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report');
