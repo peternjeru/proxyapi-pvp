@@ -67,7 +67,14 @@ Yes, the plugin is set up to directly receive callbacks from both Daraja and Pro
 No, the plugin places the transaction details directly as metadata into the order. This enables for a simpler and more convenient way to view MPesa results. But in case you need to check all transactions or get a separate list of transactions, you have access to the [ProxyAPI portal](https://api.proxyapi.co.ke/) where you get a list of all Pay via ProxyAPI transactions sent through it and their current status (whether they were succesful or not).
 
 = Does the plugin automatically complete transactions? =
-Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID. as its own unique Transaction ID and marked as complete.
+Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID as its own unique Transaction ID and marked as complete.
+
+
+== Screenshots ==
+1. How to view M-Pesa Transaction metadata tied to the order
+2. How to get M-Pesa Transaction ID for currently opened order
+3. How to configure Pay via ProxyAPI
+4. M-Pesa reports tab showing latest received PVP LnM transaction requests on Proxy API
 
 
 == Changelog ==
@@ -76,4 +83,12 @@ This is the first release.
 
 
 == Upgrade Notice ==
+
+= 1.0 =
 This is the first release.
+
+= 1.1.1 =
+Bug fix for pricing on payment request
+
+= 2.0.0 =
+Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received PVP LnM transaction requests and their status on ProxyAPI
