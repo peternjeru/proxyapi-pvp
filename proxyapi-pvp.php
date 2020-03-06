@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 1.1.1
+ * Version: 2.0.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -81,7 +81,8 @@ function init_ProxyAPI_PVP()
                     'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
                     'description' => __( 'Payment method description that the customer will see on your website.', 'woocommerce' ),
-                    'default'     => __( "Check out using Safaricom's Lipa na MPesa. Check your mobile handset for an instant payment request from Safaricom after making the order", 'woocommerce' ),
+                    'default'     => __( "Check out using Safaricom's Lipa na MPesa. Please confirm your phone number is registered for Safaricom M-Pesa to use this service, "
+                        ."and that it is enabled for STK Push. Check your mobile handset for an instant payment request from Safaricom after making the order", 'woocommerce' ),
                     'desc_tip'    => true
                 ),
 
@@ -428,7 +429,7 @@ function init_ProxyAPI_PVP()
                 $index = 0;
                 foreach ($data as $transaction)
                 {
-                    if (!empty($transaction->TransactionTime))
+                    if(!empty($transaction->TransactionTime))
                     {
                         $date = date_create_from_format("YmdHis", $transaction->TransactionTime);
                         $formatted = $date->format('Y-m-d H:i:s');
@@ -574,8 +575,8 @@ if (!function_exists('proxyapi_mpesa_report'))
             'title' => __('M-Pesa', 'woocommerce'),
             'reports' => array(
                 'received_mpesa_transactions' => array(
-                    'title' => __('Received M-Pesa Transactions','woocommerce'),
-                    'description' => "Received M-Pesa Transactions",
+                    'title' => __('Received Lipa na M-Pesa Transactions','woocommerce'),
+                    'description' => "Received Lipa na M-Pesa Transactions",
                     'hide_title' => true,
                     'callback' => array(new ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
                 )
