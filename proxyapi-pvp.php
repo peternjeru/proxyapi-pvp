@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 1.1.1
+ * Version: 2.0.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -36,6 +36,7 @@ function init_ProxyAPI_PVP()
             $this->method_description = "Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API";
             $this->max_amount = 70000;
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
+            $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
 
             $this->supports = array(
                 'products'
@@ -80,7 +81,8 @@ function init_ProxyAPI_PVP()
                     'title'       => __('Description', 'woocommerce'),
                     'type'        => 'textarea',
                     'description' => __( 'Payment method description that the customer will see on your website.', 'woocommerce' ),
-                    'default'     => __( "Check out using Safaricom's Lipa na MPesa. Check your mobile handset for an instant payment request from Safaricom after making the order", 'woocommerce' ),
+                    'default'     => __( "Check out using Safaricom's Lipa na MPesa. Please confirm your phone number is registered for Safaricom M-Pesa to use this service, "
+                        ."and that it is enabled for STK Push. Check your mobile handset for an instant payment request from Safaricom after making the order", 'woocommerce' ),
                     'desc_tip'    => true
                 ),
 
@@ -359,6 +361,124 @@ function init_ProxyAPI_PVP()
             }
         }
 
+        public function proxyapi_mpesa_transactions()
+        {
+            if (!function_exists( 'wp_get_current_user'))
+            {
+                return "Unable to fetch Transactions. Please check on your WordPress installation";
+            }
+            $user = wp_get_current_user();
+            $userId = isset($user->ID) ? (int) $user->ID : 0;
+
+            $body = wp_json_encode(array(
+                "APIKey" => $this->api_key,
+                "UserID" => $userId
+            ));
+
+            $options = [
+                'body'        => $body,
+                'headers'     => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                'timeout'     => 60,
+                'redirection' => 3,
+                'blocking'    => true,
+                'httpversion' => '1.1',
+                'sslverify'   => false,
+                'data_format' => 'body',
+            ];
+
+            $response = wp_remote_post($this->reportEndpoint, $options);
+            if (!is_wp_error($response))
+            {
+                $body = json_decode($response['body']);
+                if(empty($body))
+                {
+                    return "Unable to fetch Transactions.";
+                }
+
+                if (!isset($body->StatusCode) || !isset($body->ResponseCode))
+                {
+                    return "Unable to fetch Transactions.";
+                }
+
+                $responseCode = $body->ResponseCode;
+                $responseDesc = $body->ResponseDesc;
+                if (intval($responseCode) !== 0)
+                {
+                    return "Unable to fetch Transactions".(empty($responseDesc) ? "" : ": ".$responseDesc);
+                }
+                $data = $body->Data;
+                $html = '<table class="widefat">
+                <thead>
+                    <tr>
+                        <th><strong>Checkout Request ID</strong></th>
+                        <th><strong>MPesa Transaction ID</strong></th>
+                        <th><strong>Amount</strong></th>
+                        <th><strong>Order #</strong></th>
+                        <th><strong>Sender MSISDN</strong></th>
+                        <th><strong>Sender First Name</strong></th>
+                        <th><strong>Sender Last Name</strong></th>
+                        <th><strong>MPesa Transaction Time</strong></th>
+                        <th><strong>Confirmed</strong></th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+                $index = 0;
+                foreach ($data as $transaction)
+                {
+                    if(!empty($transaction->TransactionTime))
+                    {
+                        $date = date_create_from_format("YmdHis", $transaction->TransactionTime);
+                        $formatted = $date->format('Y-m-d H:i:s');
+                    }
+                    else
+                    {
+                        $formatted = "--";
+                    }
+
+                    if($index % 2 == 0)
+                    {
+                        $html .= '<tr class="alternate">
+                        <td>'.$transaction->CheckoutRequestID.'</td>
+                        <td>'.$transaction->MpesaTransactionID.'</td>
+                        <td>'.$transaction->Amount.'</td>
+                        <td>'.$transaction->AccountRef.'</td>
+                        <td>'.$transaction->SenderMSISDN.'</td>
+                        <td>'.$transaction->SenderFirstName.'</td>
+                        <td>'.$transaction->SenderLastName.'</td>
+                        <td>'.$formatted.'</td>
+                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                    </tr>';
+                    }
+                    else
+                    {
+                        $html .= '<tr>
+                        <td>'.$transaction->CheckoutRequestID.'</td>
+                        <td>'.$transaction->MpesaTransactionID.'</td>
+                        <td>'.$transaction->Amount.'</td>
+                        <td>'.$transaction->AccountRef.'</td>
+                        <td>'.$transaction->SenderMSISDN.'</td>
+                        <td>'.$transaction->SenderFirstName.'</td>
+                        <td>'.$transaction->SenderLastName.'</td>
+                        <td>'.$formatted.'</td>
+                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                    </tr>';
+                    }
+                    ++$index;
+                }
+
+                $html .= '</tbody></table>';
+                echo $html;
+            }
+            else
+            {
+                echo "No transactions found";
+            }
+        }
+
         private function __format_msisdn($msisdn)
         {
             //allow local numbers only
@@ -447,6 +567,26 @@ if (!function_exists('wc_get_orders_custom'))
     }
 }
 
+if (!function_exists('proxyapi_mpesa_report'))
+{
+    function proxyapi_mpesa_report($reports)
+    {
+        $reports["mpesa"] = array(
+            'title' => __('M-Pesa', 'woocommerce'),
+            'reports' => array(
+                'received_mpesa_transactions' => array(
+                    'title' => __('Received Lipa na M-Pesa Transactions','woocommerce'),
+                    'description' => "Received Lipa na M-Pesa Transactions",
+                    'hide_title' => true,
+                    'callback' => array(new ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
+                )
+            )
+        );
+        return $reports;
+    }
+}
+
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
+add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report');
