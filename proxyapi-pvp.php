@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -208,6 +208,15 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
+                if(empty($body->CheckoutRequestID) || empty($body->MerchantRequestID))
+                {
+                    $message = 'Lipa na MPesa request failed. Please try again later.';
+                    wc_add_notice($message, 'error' );
+                    write_log($message);
+                    do_action('proxyapi_pvp_payment_failed', $order_id, $responseCode, $responseDesc);
+                    return;
+                }
+
                 $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
                 add_post_meta($order_id, "request_id", $requestID, true);
                 add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
@@ -256,12 +265,21 @@ function init_ProxyAPI_PVP()
             {
                 //called either on success or failure
                 $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
+
+                if(empty($callback->Body->stkCallback->CheckoutRequestID) || empty($callback->Body->stkCallback->MerchantRequestID))
+                {
+                    write_log('Missing mandatory parameters in callback:');
+                    write_log($callback);
+                    return;
+                }
+
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
                     write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
                     return;
                 }
+
                 $order = $orders[0];
                 if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
                 {
@@ -282,6 +300,13 @@ function init_ProxyAPI_PVP()
                 else
                 {
                     //success transaction
+                    if(empty($callback->Body->stkCallback->CheckoutRequestID) || empty($callback->Body->stkCallback->MerchantRequestID))
+                    {
+                        write_log('Missing mandatory parameters in callback:');
+                        write_log($callback);
+                        return;
+                    }
+
                     if (!empty($callback->Body->stkCallback->CallbackMetadata->Item))
                     {
                         $items = $callback->Body->stkCallback->CallbackMetadata->Item;
@@ -313,6 +338,13 @@ function init_ProxyAPI_PVP()
             }
             else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
             {
+                if(empty($callback->Body->pvpCallback->CheckoutRequestID) || empty($callback->Body->pvpCallback->RequestID))
+                {
+                    write_log('Missing mandatory parameters in callback:');
+                    write_log($callback);
+                    return;
+                }
+
                 //called only on success
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));

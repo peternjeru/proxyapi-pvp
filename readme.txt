@@ -92,3 +92,6 @@ Bug fix for pricing on payment request
 
 = 2.0.0 =
 Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received PVP LnM transaction requests and their status on ProxyAPI
+
+= 2.0.1 =
+Bug fixes
