@@ -346,6 +346,7 @@ function init_ProxyAPI_PVP()
             }
             else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
             {
+                //called only on success
                 if(empty($callback->Body->pvpCallback->CheckoutRequestID) || empty($callback->Body->pvpCallback->RequestID))
                 {
                     write_log('Missing mandatory parameters in callback:');
@@ -353,7 +354,6 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                //called only on success
                 $checkoutRequestId = $callback->Body->pvpCallback->CheckoutRequestID;
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
@@ -479,24 +479,26 @@ function init_ProxyAPI_PVP()
                 $html = "";
 
                 $dueTimestamp = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
-                $noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
+                if (!empty($dueTimestamp))
+                {
+                    $noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
+                    $date = new DateTime();
+                    $date->setTimestamp($dueTimestamp);
+                    if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                    {
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                    }
+                    else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                    {
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                    }
+                    else
+                    {
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                    }
+                    $html .= $formattedDate;
+                }
 
-                $date = new DateTime();
-                $date->setTimestamp($dueTimestamp);
-                if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
-                {
-                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
-                }
-                else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
-                {
-                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
-                }
-                else
-                {
-                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
-                }
-
-                $html .= $formattedDate;
                 $html .= '<table class="widefat">
                 <thead>
                     <tr>
