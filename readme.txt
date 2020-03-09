@@ -69,6 +69,12 @@ No, the plugin places the transaction details directly as metadata into the orde
 = Does the plugin automatically complete transactions? =
 Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID as its own unique Transaction ID and marked as complete.
 
+= Where can I get the documentation on PVP? =
+[Proxy API Documentation](https://docs.proxyapi.co.ke/v1/)
+[Proxy API PVP Documentation](https://docs.proxyapi.co.ke/v1/#pvp)
+[Proxy API Portal](https://api.proxyapi.co.ke/)
+[Proxy API Telegram Support Group](https://t.me/joinchat/I-jBHE2JnVFAfGpjWRgJbA)
+
 
 == Screenshots ==
 1. How to view M-Pesa Transaction metadata tied to the order
@@ -95,3 +101,6 @@ Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received
 
 = 2.0.1 =
 Bug fixes
+
+= 2.1.0 =
+Added Due date notification
