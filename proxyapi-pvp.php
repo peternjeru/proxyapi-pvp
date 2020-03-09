@@ -130,25 +130,42 @@ function init_ProxyAPI_PVP()
                 return false;
             }
 
-            if( empty($_POST['billing_phone']))
+            $msisdn = "";
+            $order_id = get_query_var('order-pay');
+            if (!empty($order_id))
             {
-                //TODO: could be reorder, check for existing phone number
-
-                $order_id = get_query_var('order-pay');
-                if (!empty($order_id))
+                //its a reorder
+                $order = wc_get_order($order_id);
+                if(!empty($order))
                 {
-                    $order = wc_get_order($order_id);
-                    if(!empty($order))
+                    //order exists
+                    $msisdn = $this->__format_msisdn($order->get_billing_phone());
+                    if(empty($msisdn))
                     {
-                        write_log($order->get_billing_phone());
+                        wc_add_notice('Phone number not available in order details.', 'error');
+                        return false;
                     }
                 }
-
-                wc_add_notice( 'Phone Number is required!', 'error');
-                return false;
+                else
+                {
+                    //order does not exist
+                    wc_add_notice('Order details cannot be found.', 'error');
+                    return false;
+                }
+            }
+            else
+            {
+                //its a new order
+                if( empty($_POST['billing_phone']))
+                {
+                    //TODO: could be reorder, check for existing phone number
+                    wc_add_notice( 'Phone Number is required!', 'error');
+                    return false;
+                }
+                $msisdn = $this->__format_msisdn($_POST['billing_phone']);
             }
 
-            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $_POST['billing_phone']) !== 1)
+            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $msisdn) !== 1)
             {
                 //TODO: could be reorder, check for existing phone number
                 wc_add_notice( 'Please enter a valid Phone Number.', 'error');
