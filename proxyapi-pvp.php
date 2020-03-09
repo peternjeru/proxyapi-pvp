@@ -493,32 +493,33 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
-                if($this->lastShown <= time())
+                if($this->lastShown < time())
                 {
                     if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                     {
                         $class = 'notice notice-error is-dismissible';
-                        $this->lastShown = strtotime("+1 hour");
+//                        $this->lastShown = strtotime("+1 hour");
                     }
                     else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
                     {
                         $class = 'notice notice-error is-dismissible';
-                        $this->lastShown = strtotime("+3 hours");
+//                        $this->lastShown = strtotime("+3 hours");
                     }
                     else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
                     {
                         $class = 'notice notice-warning is-dismissible';
-                        $this->lastShown = strtotime("+24 hours");
+//                        $this->lastShown = strtotime("+24 hours");
                     }
                     else
                     {
                         $class = 'notice notice-info is-dismissible';
-                        $this->lastShown = strtotime("+48 hours");
+//                        $this->lastShown = strtotime("+48 hours");
                     }
 
+                    $this->lastShown = 0;
                     $_SESSION["lastShown"] = $this->lastShown;
                     $dueDate = $this->dueDate."";
-                    $html .= sprintf ( '<div class="%1$s"><p>Your ProxyAPI PVP Account is due on %2$s</p></div><br>', esc_attr($class), esc_html($dueDate));
+                    $html .= sprintf( '<div class="%1$s"><p>Your ProxyAPI PVP Account is due on %2$s</p></div><br>', esc_attr($class), esc_html($dueDate));
                 }
 
                 $html .= '<table class="widefat">
