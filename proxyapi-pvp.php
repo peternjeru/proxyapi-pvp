@@ -66,7 +66,6 @@ function init_ProxyAPI_PVP()
             );
             add_action('woocommerce_api_'.strtolower($this->webHook), array( $this, 'pvp_callback'));
             add_action('admin_notices', array($this, 'proxyapi_admin_due_notices'));
-            add_filter('woocommerce_admin_reports', array(__CLASS__, 'proxyapi_mpesa_report'));
         }
 
         public function init_form_fields()
@@ -455,22 +454,6 @@ function init_ProxyAPI_PVP()
             }
         }
 
-        public function proxyapi_mpesa_report($reports)
-        {
-            $reports["mpesa"] = array(
-                'title' => __('M-Pesa', 'woocommerce'),
-                'reports' => array(
-                    'received_mpesa_transactions' => array(
-                        'title' => __('Received Lipa na M-Pesa Transactions','woocommerce'),
-                        'description' => "Received Lipa na M-Pesa Transactions",
-                        'hide_title' => true,
-                        'callback' => array($this, 'proxyapi_mpesa_transactions')
-                    )
-                )
-            );
-            return $reports;
-        }
-
         public function proxyapi_mpesa_transactions()
         {
             if (!function_exists( 'wp_get_current_user'))
@@ -677,26 +660,26 @@ if (!function_exists('wc_get_orders_custom'))
     }
 }
 
-//if (!function_exists('proxyapi_mpesa_report'))
-//{
-//    function proxyapi_mpesa_report($reports)
-//    {
-//        $reports["mpesa"] = array(
-//            'title' => __('M-Pesa', 'woocommerce'),
-//            'reports' => array(
-//                'received_mpesa_transactions' => array(
-//                    'title' => __('Received Lipa na M-Pesa Transactions','woocommerce'),
-//                    'description' => "Received Lipa na M-Pesa Transactions",
-//                    'hide_title' => true,
-//                    'callback' => array(new WC_Payment_Gateway_ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
-//                )
-//            )
-//        );
-//        return $reports;
-//    }
-//}
+if (!function_exists('proxyapi_mpesa_report'))
+{
+    function proxyapi_mpesa_report($reports)
+    {
+        $reports["mpesa"] = array(
+            'title' => __('M-Pesa', 'woocommerce'),
+            'reports' => array(
+                'received_mpesa_transactions' => array(
+                    'title' => __('Received Lipa na M-Pesa Transactions','woocommerce'),
+                    'description' => "Received Lipa na M-Pesa Transactions",
+                    'hide_title' => true,
+                    'callback' => array(new WC_Payment_Gateway_ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
+                )
+            )
+        );
+        return $reports;
+    }
+}
 
 add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
-//add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report');
+add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report');
