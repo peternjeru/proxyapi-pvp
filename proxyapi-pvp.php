@@ -176,9 +176,11 @@ function init_ProxyAPI_PVP()
         public function process_payment($order_id)
         {
             global $woocommerce;
+            $exists = false;
             if(!empty(wc_get_order($order_id)))
             {
                 $order = wc_get_order($order_id);
+                $exists = true;
             }
             else
             {
@@ -260,17 +262,11 @@ function init_ProxyAPI_PVP()
                 }
 
                 $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom');
-                if($order->meta_exists("request_id"))
-                {
-                    $order->delete_meta_data("request_id");
-                }
-                add_post_meta($order_id, "request_id", $requestID, true);
+//                add_post_meta($order_id, "request_id", $requestID, true);
+//                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
 
-                if($order->meta_exists("checkout_request_id"))
-                {
-                    $order->delete_meta_data("checkout_request_id");
-                }
-                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
+                $exists ? $order->update_meta_data("request_id", $requestID) : add_post_meta($order_id, "request_id", $requestID, true);
+                $exists ? $order->update_meta_data("checkout_request_id", $body->CheckoutRequestID) : add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
 
                 do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->MerchantRequestID, $body->CheckoutRequestID);
