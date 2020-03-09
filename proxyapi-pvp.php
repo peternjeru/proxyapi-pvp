@@ -421,8 +421,6 @@ function init_ProxyAPI_PVP()
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
                         write_log("Order Payment completed successfully");
                     }
-
-                    write_log($_SESSION);
                 }
             }
             else
@@ -488,11 +486,11 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
-                write_log($_SESSION);
-
-                $dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
+                $dueTimestamp = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
                 $noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
 
+                $date = new DateTime();
+                $date->setTimestamp($dueTimestamp);
                 if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                 {
 
@@ -510,7 +508,7 @@ function init_ProxyAPI_PVP()
 
                 }
 
-                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', esc_html($dueDate.""));
+                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                 $html .= '<table class="widefat">
                 <thead>
                     <tr>
