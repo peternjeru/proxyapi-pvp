@@ -20,7 +20,6 @@ defined( 'ABSPATH' ) or die( 'Not allowed');
 define("WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE", 0);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
-define("WC_PROXYAPI_PVP_LOG_LEVEL_FATAL", 3);
 
 if (!session_id("62c4c601-d9fe-459e-95c6-9518d7e8e786"))
 {
@@ -386,16 +385,10 @@ function init_ProxyAPI_PVP()
 
                     if (!empty($metadata->DueDate))
                     {
-                        write_log("Due Date: ".$metadata->DueDate);
                         $dueDate = intval($metadata->DueDate);
-                        if (($dueDate - time()) <= 86400)
+                        if (($dueDate - time()) <= (86400 * 2))
                         {
-                            //less than a day left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_FATAL;
-                        }
-                        else if (($dueDate - time()) <= (86400 * 3))
-                        {
-                            //less than three days left
+                            //less than two days left
                             $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
                         }
                         else if (($dueDate - time()) <= (86400 * 7))
@@ -408,7 +401,6 @@ function init_ProxyAPI_PVP()
                             //enough time left
                             $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
                         }
-
                         $_SESSION["dueDate"] = $dueDate;
                         $_SESSION["noticeLevel"] = $noticeLevel;
                     }
@@ -491,11 +483,7 @@ function init_ProxyAPI_PVP()
 
                 $date = new DateTime();
                 $date->setTimestamp($dueTimestamp);
-                if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
-                {
-                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
-                }
-                else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
                 {
                     $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                 }
