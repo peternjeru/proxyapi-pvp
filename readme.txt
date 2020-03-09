@@ -104,3 +104,6 @@ Bug fixes
 
 = 2.1.0 =
 Added Due date notification
+
+= 2.2.0 =
+Added payment retry capability for failed orders
