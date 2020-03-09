@@ -421,6 +421,8 @@ function init_ProxyAPI_PVP()
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
                         write_log("Order Payment completed successfully");
                     }
+
+                    write_log($_SESSION);
                 }
             }
             else
