@@ -575,7 +575,7 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderLastName.'</td>
                         <td>'.$formatted.'</td>
                         <td>'.((bool) $transaction->Confirmed === true
-                                ? '<span style="font-weight: bold; color: mediumspringgreen">Yes</span>'
+                                ? '<span style="font-weight: bold; color: forestgreen">Yes</span>'
                                 : '<span style="font-weight: bold; color: orangered">No</span>').'</td>
                     </tr>';
                     }
@@ -591,7 +591,7 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderLastName.'</td>
                         <td>'.$formatted.'</td>
                         <td>'.((bool) $transaction->Confirmed === true
-                                ? '<span style="font-weight: bold; color: mediumspringgreen">Yes</span>'
+                                ? '<span style="font-weight: bold; color: forestgreen">Yes</span>'
                                 : '<span style="font-weight: bold; color: orangered">No</span>').'</td>
                     </tr>';
                     }
