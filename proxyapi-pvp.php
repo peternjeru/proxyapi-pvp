@@ -519,7 +519,7 @@ function init_ProxyAPI_PVP()
                     $this->lastShown = 0;
                     $_SESSION["lastShown"] = $this->lastShown;
                     $dueDate = $this->dueDate."";
-                    $html .= sprintf( '<div class="%1$s"><p>Your ProxyAPI PVP Account is due on %2$s</p></div><br>', esc_attr($class), esc_html($dueDate));
+                    $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', esc_html($dueDate));
                 }
 
                 $html .= '<table class="widefat">
