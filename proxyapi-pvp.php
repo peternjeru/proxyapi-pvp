@@ -406,7 +406,7 @@ function init_ProxyAPI_PVP()
                         else
                         {
                             //enough time left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
+                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
                         }
 
                         $_SESSION["dueDate"] = $dueDate;
