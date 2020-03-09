@@ -493,22 +493,22 @@ function init_ProxyAPI_PVP()
                 $date->setTimestamp($dueTimestamp);
                 if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                 {
-                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
+                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                 }
                 else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
                 {
-                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
+                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                 }
                 else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
                 {
-                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
+                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                 }
                 else
                 {
-                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
+                    $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                 }
 
-                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $formattedDate);
+                $html .= $formattedDate;
                 $html .= '<table class="widefat">
                 <thead>
                     <tr>
