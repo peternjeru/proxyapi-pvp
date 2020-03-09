@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -262,9 +262,6 @@ function init_ProxyAPI_PVP()
                 }
 
                 $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom');
-//                add_post_meta($order_id, "request_id", $requestID, true);
-//                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
-
                 $exists ? update_post_meta($order_id, "request_id", $requestID) : add_post_meta($order_id, "request_id", $requestID, true);
                 $exists ? update_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID) : add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
@@ -591,7 +588,9 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderFirstName.'</td>
                         <td>'.$transaction->SenderLastName.'</td>
                         <td>'.$formatted.'</td>
-                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                        <td>'.((bool) $transaction->Confirmed === true
+                                ? '<span style="font-weight: bold; color: dodgerblue">Yes</span>'
+                                : '<span style="font-weight: bold; color: orangered">No</span>').'</td>
                     </tr>';
                     }
                     ++$index;
