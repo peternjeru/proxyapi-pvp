@@ -155,7 +155,7 @@ function init_ProxyAPI_PVP()
             else
             {
                 //its a new order
-                if( empty($_POST['billing_phone']))
+                if(empty($_POST['billing_phone']))
                 {
                     //TODO: could be reorder, check for existing phone number
                     wc_add_notice( 'Phone Number is required!', 'error');
