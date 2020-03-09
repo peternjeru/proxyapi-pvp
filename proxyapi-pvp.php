@@ -130,7 +130,6 @@ function init_ProxyAPI_PVP()
                 return false;
             }
 
-            $msisdn = "";
             $order_id = get_query_var('order-pay');
             if (!empty($order_id))
             {
@@ -179,10 +178,12 @@ function init_ProxyAPI_PVP()
             global $woocommerce;
             if(!empty(wc_get_order($order_id)))
             {
-                write_log(wc_get_order($order_id));
+                $order = wc_get_order($order_id);
             }
-
-            $order = new WC_Order($order_id);
+            else
+            {
+                $order = new WC_Order($order_id);
+            }
 
             $requestID = strval($this->__getRandom(15));
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
@@ -322,7 +323,7 @@ function init_ProxyAPI_PVP()
                 }
 
                 $order = $orders[0];
-                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
+                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "refunded")
                 {
                     do_action('proxyapi_pvp_payment_completed', $order->get_id());
                     write_log("Payment already processed: ".$order->get_status());
@@ -440,7 +441,7 @@ function init_ProxyAPI_PVP()
 
                     if (!empty($metadata->TransactionID)
                         && strtolower($order->get_status()) !== "completed"
-                        && strtolower($order->get_status()) !== "failed")
+                        && strtolower($order->get_status()) !== "refunded")
                     {
                         $order->payment_complete($metadata->TransactionID);
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
