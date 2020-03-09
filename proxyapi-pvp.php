@@ -265,8 +265,8 @@ function init_ProxyAPI_PVP()
 //                add_post_meta($order_id, "request_id", $requestID, true);
 //                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
 
-                $exists ? $order->update_meta_data("request_id", $requestID) : add_post_meta($order_id, "request_id", $requestID, true);
-                $exists ? $order->update_meta_data("checkout_request_id", $body->CheckoutRequestID) : add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
+                $exists ? update_post_meta($order_id, "request_id", $requestID) : add_post_meta($order_id, "request_id", $requestID, true);
+                $exists ? update_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID) : add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
 
                 do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->MerchantRequestID, $body->CheckoutRequestID);
