@@ -574,7 +574,9 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderFirstName.'</td>
                         <td>'.$transaction->SenderLastName.'</td>
                         <td>'.$formatted.'</td>
-                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                        <td>'.((bool) $transaction->Confirmed === true
+                                ? '<span style="font-weight: bold; color: dodgerblue">Yes</span>'
+                                : '<span style="font-weight: bold; color: orangered">No</span>').'</td>
                     </tr>';
                     }
                     else
