@@ -133,11 +133,11 @@ function init_ProxyAPI_PVP()
             $order_id = get_query_var('order-pay');
             if (!empty($order_id))
             {
-                //its a reorder
+                //it might be a reorder, check if it exists
                 $order = wc_get_order($order_id);
                 if(!empty($order))
                 {
-                    //order exists
+                    //order exists, thus its a reorder
                     $msisdn = $this->__format_msisdn($order->get_billing_phone());
                     if(empty($msisdn))
                     {

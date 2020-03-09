@@ -69,7 +69,7 @@ No, the plugin places the transaction details directly as metadata into the orde
 = Does the plugin automatically complete transactions? =
 Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID as its own unique Transaction ID and marked as complete.
 
-= Where can I get the documentation on PVP? =
+= Where can I get the documentation on PVP or ProxyAPI? =
 [Proxy API Documentation](https://docs.proxyapi.co.ke/v1/)
 [Proxy API PVP Documentation](https://docs.proxyapi.co.ke/v1/#pvp)
 [Proxy API Portal](https://api.proxyapi.co.ke/)
