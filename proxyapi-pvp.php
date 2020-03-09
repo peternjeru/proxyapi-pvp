@@ -486,6 +486,8 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
+                write_log($_SESSION);
+
                 $dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
                 $noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
 
