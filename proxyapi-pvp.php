@@ -22,7 +22,7 @@ define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_FATAL", 3);
 
-if (!session_id())
+if (!session_id("62c4c601-d9fe-459e-95c6-9518d7e8e786"))
 {
     session_start();
 }
