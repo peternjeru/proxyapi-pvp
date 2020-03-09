@@ -493,22 +493,22 @@ function init_ProxyAPI_PVP()
                 $date->setTimestamp($dueTimestamp);
                 if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                 {
-
+                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
                 }
                 else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
                 {
-
+                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
                 }
                 else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
                 {
-
+                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
                 }
                 else
                 {
-
+                    $formattedDate = '<p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">'.$date->format('Y-m-d H:i:s').'</p>';
                 }
 
-                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $formattedDate);
                 $html .= '<table class="widefat">
                 <thead>
                     <tr>
