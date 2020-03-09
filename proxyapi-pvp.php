@@ -49,7 +49,6 @@ function init_ProxyAPI_PVP()
 
             //notifications
             $this->noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
-            $this->lastShown = empty($_SESSION["lastShown"]) ? 0 : $_SESSION["lastShown"];
             $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
 
             $this->supports = array(
@@ -345,7 +344,7 @@ function init_ProxyAPI_PVP()
                         {
                             $order->payment_complete($orderDetails["MpesaReceiptNumber"]);
                             do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                            write_log("Order completed successfully");
+                            write_log("Order Payment completed successfully");
                         }
                     }
                 }
@@ -367,6 +366,7 @@ function init_ProxyAPI_PVP()
                     write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
                     return;
                 }
+
                 $order = $orders[0];
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
                 {
@@ -390,8 +390,8 @@ function init_ProxyAPI_PVP()
 
                     if (!empty($metadata->DueDate))
                     {
+                        write_log("Due Date: ".$metadata->DueDate);
 //                        $this->noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
-//                        $this->lastShown = empty($_SESSION["lastShown"]) ? 0 : $_SESSION["lastShown"];
 //                        $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
 
                         $this->dueDate = intval($metadata->DueDate);
@@ -493,35 +493,24 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
-//                if($this->lastShown < time())
+                if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                 {
-                    if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
-                    {
-                        $class = 'notice notice-error is-dismissible';
-//                        $this->lastShown = strtotime("+1 hour");
-                    }
-                    else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
-                    {
-                        $class = 'notice notice-error is-dismissible';
-//                        $this->lastShown = strtotime("+3 hours");
-                    }
-                    else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
-                    {
-                        $class = 'notice notice-warning is-dismissible';
-//                        $this->lastShown = strtotime("+24 hours");
-                    }
-                    else
-                    {
-                        $class = 'notice notice-info is-dismissible';
-//                        $this->lastShown = strtotime("+48 hours");
-                    }
 
-                    $this->lastShown = 0;
-                    $_SESSION["lastShown"] = $this->lastShown;
-                    $dueDate = $this->dueDate."";
-                    $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', esc_html($dueDate));
+                }
+                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                {
+
+                }
+                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                {
+
+                }
+                else
+                {
+
                 }
 
+                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', esc_html($this->dueDate));
                 $html .= '<table class="widefat">
                 <thead>
                     <tr>
