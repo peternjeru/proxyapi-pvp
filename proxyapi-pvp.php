@@ -261,7 +261,7 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom');
+                $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom.');
                 $exists ? update_post_meta($order_id, "request_id", $requestID) : add_post_meta($order_id, "request_id", $requestID, true);
                 $exists ? update_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID) : add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
@@ -319,7 +319,7 @@ function init_ProxyAPI_PVP()
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
-                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
+                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'.");
                     return;
                 }
 
@@ -393,7 +393,7 @@ function init_ProxyAPI_PVP()
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
-                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
+                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'.");
                     return;
                 }
 
