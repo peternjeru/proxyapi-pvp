@@ -133,6 +133,14 @@ function init_ProxyAPI_PVP()
             if( empty($_POST['billing_phone']))
             {
                 //TODO: could be reorder, check for existing phone number
+
+                $phone = get_query_var('order-pay');
+                if (!empty($phone))
+                {
+                    write_log("Phone: ");
+                    write_log($phone);
+                }
+
                 wc_add_notice( 'Phone Number is required!', 'error');
                 return false;
             }
@@ -149,7 +157,12 @@ function init_ProxyAPI_PVP()
         public function process_payment($order_id)
         {
             global $woocommerce;
-            $order = new WC_Order( $order_id);
+            if(!empty(wc_get_order($order_id)))
+            {
+                write_log(wc_get_order($order_id));
+            }
+
+            $order = new WC_Order($order_id);
 
             $requestID = strval($this->__getRandom(15));
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
@@ -225,7 +238,7 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                $order->update_status('on-hold', 'Order sent. Please check your Phone for an instant payment prompt from Safaricom');
+                $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom');
                 add_post_meta($order_id, "request_id", $requestID, true);
                 add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
