@@ -133,6 +133,14 @@ function init_ProxyAPI_PVP()
             if( empty($_POST['billing_phone']))
             {
                 //TODO: could be reorder, check for existing phone number
+
+                $phone = get_query_var('order-pay');
+                if (!empty($phone))
+                {
+                    write_log("Phone: ");
+                    write_log($phone);
+                }
+
                 wc_add_notice( 'Phone Number is required!', 'error');
                 return false;
             }
