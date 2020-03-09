@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.0.1
+ * Version: 2.1.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -16,16 +16,20 @@
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
-defined( 'ABSPATH' ) or die( 'Not allowed' );
+defined( 'ABSPATH' ) or die( 'Not allowed');
+define("WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE", 0);
+define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
+define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
+define("WC_PROXYAPI_PVP_LOG_LEVEL_FATAL", 3);
 
 require "proxyapi-pvp-uninstall.php";
 
 function init_ProxyAPI_PVP()
 {
-    class ProxyAPI_PVP extends WC_Payment_Gateway
+    class WC_Payment_Gateway_ProxyAPI_PVP extends WC_Payment_Gateway
     {
         private static $instance = false;
-        private $webHook = "ProxyAPI_PVP";
+        private $webHook = "WC_Payment_Gateway_ProxyAPI_PVP";
 
         public function __construct()
         {
@@ -37,6 +41,11 @@ function init_ProxyAPI_PVP()
             $this->max_amount = 70000;
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
             $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
+
+            //notifications
+            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
+            $this->lastShown = 0;
+            $this->dueDate = 0;
 
             $this->supports = array(
                 'products'
@@ -354,12 +363,6 @@ function init_ProxyAPI_PVP()
                     return;
                 }
                 $order = $orders[0];
-                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
-                {
-                    do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                    write_log("Order already completed");
-                    return;
-                }
                 if (!empty($callback->Body->pvpCallback->CallbackMetadata))
                 {
                     $metadata = $callback->Body->pvpCallback->CallbackMetadata;
@@ -379,17 +382,74 @@ function init_ProxyAPI_PVP()
                     {
                         add_post_meta($order->get_id(), "sender_last_name", $metadata->SenderLastName);
                     }
-                    if (!empty($metadata->TransactionID))
+
+                    if (!empty($metadata->DueDate))
+                    {
+                        $this->dueDate = intval($metadata->DueDate);
+                        if ($this->dueDate - time() < strtotime("+1 day"))
+                        {
+                            //less than a day left
+                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_FATAL;
+                        }
+                        else if ($this->dueDate - time() < strtotime("+3 days"))
+                        {
+                            //less than three days left
+                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
+                        }
+                        else if ($this->dueDate - time() < strtotime("+1 weeks"))
+                        {
+                            //less than one week left
+                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
+                        }
+                        else
+                        {
+                            //enough time left
+                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
+                        }
+                    }
+
+                    if (!empty($metadata->TransactionID)
+                        && strtolower($order->get_status()) !== "completed"
+                        && strtolower($order->get_status()) !== "failed")
                     {
                         $order->payment_complete($metadata->TransactionID);
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
-                        write_log("Order completed successfully");
+                        write_log("Order Payment completed successfully");
                     }
                 }
             }
             else
             {
                 write_log("Unknown callback");
+            }
+        }
+
+        public function proxyapi_admin_due_notices()
+        {
+            if($this->lastShown <= time())
+            {
+                if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
+                {
+                    $class = 'notice notice-error';
+                    $this->lastShown = strtotime("+1 hour");
+                }
+                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                {
+                    $class = 'notice notice-error';
+                    $this->lastShown = strtotime("+3 hours");
+                }
+                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                {
+                    $class = 'notice notice-warning';
+                    $this->lastShown = strtotime("+24 hours");
+                }
+                else
+                {
+                    $class = 'notice notice-info';
+                    $this->lastShown = strtotime("+48 hours");
+                }
+                $message = __($this->dueDate."", 'woocommerce');
+                printf( '<div class="%1$s"><p>Your ProxyAPI PVP Account is due on %2$s</p></div>', esc_attr($class), esc_html($message));
             }
         }
 
@@ -437,7 +497,7 @@ function init_ProxyAPI_PVP()
 
                 $responseCode = $body->ResponseCode;
                 $responseDesc = $body->ResponseDesc;
-                if (intval($responseCode) !== 0)
+                if(intval($responseCode) !== 0)
                 {
                     return "Unable to fetch Transactions".(empty($responseDesc) ? "" : ": ".$responseDesc);
                 }
@@ -555,7 +615,7 @@ function init_ProxyAPI_PVP()
 
 function add_ProxyAPI_PVP( $gateways)
 {
-    $gateways[] = 'ProxyAPI_PVP';
+    $gateways[] = 'WC_Payment_Gateway_ProxyAPI_PVP';
     return $gateways;
 }
 
@@ -610,7 +670,7 @@ if (!function_exists('proxyapi_mpesa_report'))
                     'title' => __('Received Lipa na M-Pesa Transactions','woocommerce'),
                     'description' => "Received Lipa na M-Pesa Transactions",
                     'hide_title' => true,
-                    'callback' => array(new ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
+                    'callback' => array(new WC_Payment_Gateway_ProxyAPI_PVP(), 'proxyapi_mpesa_transactions')
                 )
             )
         );
@@ -622,3 +682,4 @@ add_action('plugins_loaded', 'init_ProxyAPI_PVP');
 add_filter( 'woocommerce_payment_gateways', 'add_ProxyAPI_PVP');
 add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', 'wc_get_orders_custom', 10, 2);
 add_filter( 'woocommerce_admin_reports', 'proxyapi_mpesa_report');
+add_action( 'admin_notices', array(new WC_Payment_Gateway_ProxyAPI_PVP(), 'proxyapi_admin_due_notices'));
