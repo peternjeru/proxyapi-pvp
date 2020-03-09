@@ -493,7 +493,7 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
-                if($this->lastShown < time())
+//                if($this->lastShown < time())
                 {
                     if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                     {
