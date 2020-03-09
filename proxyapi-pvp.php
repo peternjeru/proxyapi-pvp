@@ -22,6 +22,11 @@ define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_FATAL", 3);
 
+if (!session_id())
+{
+    session_start();
+}
+
 require "proxyapi-pvp-uninstall.php";
 
 function init_ProxyAPI_PVP()
@@ -43,9 +48,9 @@ function init_ProxyAPI_PVP()
             $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
 
             //notifications
-            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
-            $this->lastShown = 0;
-            $this->dueDate = 0;
+            $this->noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
+            $this->lastShown = empty($_SESSION["lastShown"]) ? 0 : $_SESSION["lastShown"];
+            $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
 
             $this->supports = array(
                 'products'
@@ -65,7 +70,6 @@ function init_ProxyAPI_PVP()
                 )
             );
             add_action('woocommerce_api_'.strtolower($this->webHook), array( $this, 'pvp_callback'));
-            add_action('admin_notices', array($this, 'proxyapi_admin_due_notices'));
         }
 
         public function init_form_fields()
@@ -386,6 +390,10 @@ function init_ProxyAPI_PVP()
 
                     if (!empty($metadata->DueDate))
                     {
+//                        $this->noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
+//                        $this->lastShown = empty($_SESSION["lastShown"]) ? 0 : $_SESSION["lastShown"];
+//                        $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
+
                         $this->dueDate = intval($metadata->DueDate);
                         if ($this->dueDate - time() < strtotime("+1 day"))
                         {
@@ -407,6 +415,9 @@ function init_ProxyAPI_PVP()
                             //enough time left
                             $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
                         }
+
+                        $_SESSION["dueDate"] = $this->dueDate;
+                        $_SESSION["noticeLevel"] = $this->noticeLevel;
                     }
 
                     if (!empty($metadata->TransactionID)
@@ -425,37 +436,13 @@ function init_ProxyAPI_PVP()
             }
         }
 
-        public function proxyapi_admin_due_notices()
-        {
-            if($this->lastShown <= time())
-            {
-                if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
-                {
-                    $class = 'notice notice-error';
-                    $this->lastShown = strtotime("+1 hour");
-                }
-                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
-                {
-                    $class = 'notice notice-error';
-                    $this->lastShown = strtotime("+3 hours");
-                }
-                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
-                {
-                    $class = 'notice notice-warning';
-                    $this->lastShown = strtotime("+24 hours");
-                }
-                else
-                {
-                    $class = 'notice notice-info';
-                    $this->lastShown = strtotime("+48 hours");
-                }
-                $message = __($this->dueDate."", 'woocommerce');
-                printf( '<div class="%1$s"><p>Your ProxyAPI PVP Account is due on %2$s</p></div>', esc_attr($class), esc_html($message));
-            }
-        }
-
         public function proxyapi_mpesa_transactions()
         {
+            if (!is_admin())
+            {
+                return "";
+            }
+
             if (!function_exists( 'wp_get_current_user'))
             {
                 return "Unable to fetch Transactions. Please check on your WordPress installation";
@@ -502,8 +489,39 @@ function init_ProxyAPI_PVP()
                 {
                     return "Unable to fetch Transactions".(empty($responseDesc) ? "" : ": ".$responseDesc);
                 }
+
                 $data = $body->Data;
-                $html = '<table class="widefat">
+                $html = "";
+
+                if($this->lastShown <= time())
+                {
+                    if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
+                    {
+                        $class = 'notice notice-error is-dismissible';
+                        $this->lastShown = strtotime("+1 hour");
+                    }
+                    else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                    {
+                        $class = 'notice notice-error is-dismissible';
+                        $this->lastShown = strtotime("+3 hours");
+                    }
+                    else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                    {
+                        $class = 'notice notice-warning is-dismissible';
+                        $this->lastShown = strtotime("+24 hours");
+                    }
+                    else
+                    {
+                        $class = 'notice notice-info is-dismissible';
+                        $this->lastShown = strtotime("+48 hours");
+                    }
+
+                    $_SESSION["lastShown"] = $this->lastShown;
+                    $dueDate = $this->dueDate."";
+                    $html .= sprintf ( '<div class="%1$s"><p>Your ProxyAPI PVP Account is due on %2$s</p></div><br>', esc_attr($class), esc_html($dueDate));
+                }
+
+                $html .= '<table class="widefat">
                 <thead>
                     <tr>
                         <th><strong>Checkout Request ID</strong></th>
