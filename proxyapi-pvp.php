@@ -47,10 +47,6 @@ function init_ProxyAPI_PVP()
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
             $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
 
-            //notifications
-            $this->noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
-            $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
-
             $this->supports = array(
                 'products'
             );
@@ -391,33 +387,30 @@ function init_ProxyAPI_PVP()
                     if (!empty($metadata->DueDate))
                     {
                         write_log("Due Date: ".$metadata->DueDate);
-//                        $this->noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
-//                        $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
-
-                        $this->dueDate = intval($metadata->DueDate);
-                        if (($this->dueDate - time()) <= 86400)
+                        $dueDate = intval($metadata->DueDate);
+                        if (($dueDate - time()) <= 86400)
                         {
                             //less than a day left
-                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_FATAL;
+                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_FATAL;
                         }
-                        else if (($this->dueDate - time()) <= (86400 * 3))
+                        else if (($dueDate - time()) <= (86400 * 3))
                         {
                             //less than three days left
-                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
+                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
                         }
-                        else if (($this->dueDate - time()) <= (86400 * 7))
+                        else if (($dueDate - time()) <= (86400 * 7))
                         {
                             //less than one week left
-                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
+                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
                         }
                         else
                         {
                             //enough time left
-                            $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
+                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
                         }
 
-                        $_SESSION["dueDate"] = $this->dueDate;
-                        $_SESSION["noticeLevel"] = $this->noticeLevel;
+                        $_SESSION["dueDate"] = $dueDate;
+                        $_SESSION["noticeLevel"] = $noticeLevel;
                     }
 
                     if (!empty($metadata->TransactionID)
@@ -493,15 +486,18 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
-                if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
+                $dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
+                $noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
+
+                if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_FATAL)
                 {
 
                 }
-                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
                 {
 
                 }
-                else if ($this->noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
                 {
 
                 }
@@ -510,7 +506,7 @@ function init_ProxyAPI_PVP()
 
                 }
 
-                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', esc_html($this->dueDate));
+                $html .= sprintf( '<div><p>Your ProxyAPI PVP Account is due on %1$s</p></div><br>', esc_html($dueDate.""));
                 $html .= '<table class="widefat">
                 <thead>
                     <tr>
