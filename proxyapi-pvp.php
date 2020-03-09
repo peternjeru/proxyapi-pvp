@@ -468,6 +468,8 @@ function init_ProxyAPI_PVP()
                     )
                 )
             );
+
+            write_log($reports);
             return $reports;
         }
 
