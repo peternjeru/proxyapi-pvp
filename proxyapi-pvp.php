@@ -140,7 +140,7 @@ function init_ProxyAPI_PVP()
                     $order = wc_get_order($order_id);
                     if(!empty($order))
                     {
-                        write_log($order);
+                        write_log($order->get_billing_phone());
                     }
                 }
 
