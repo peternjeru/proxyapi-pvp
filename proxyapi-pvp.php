@@ -66,7 +66,7 @@ function init_ProxyAPI_PVP()
             );
             add_action('woocommerce_api_'.strtolower($this->webHook), array( $this, 'pvp_callback'));
             add_action('admin_notices', array($this, 'proxyapi_admin_due_notices'));
-            add_filter('woocommerce_admin_reports', array($this, 'proxyapi_mpesa_report'));
+            add_filter('woocommerce_admin_reports', array(__CLASS__, 'proxyapi_mpesa_report'));
         }
 
         public function init_form_fields()
@@ -468,8 +468,6 @@ function init_ProxyAPI_PVP()
                     )
                 )
             );
-
-            write_log($reports);
             return $reports;
         }
 
