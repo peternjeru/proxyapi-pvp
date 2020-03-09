@@ -260,16 +260,15 @@ function init_ProxyAPI_PVP()
                 }
 
                 $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom');
-
-                if(meta_exists("request_id"))
+                if($order->meta_exists("request_id"))
                 {
-                    delete_meta_data("request_id");
+                    $order->delete_meta_data("request_id");
                 }
                 add_post_meta($order_id, "request_id", $requestID, true);
 
-                if(meta_exists("checkout_request_id"))
+                if($order->meta_exists("checkout_request_id"))
                 {
-                    delete_meta_data("checkout_request_id");
+                    $order->delete_meta_data("checkout_request_id");
                 }
                 add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
