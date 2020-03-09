@@ -134,11 +134,14 @@ function init_ProxyAPI_PVP()
             {
                 //TODO: could be reorder, check for existing phone number
 
-                $phone = get_query_var('order-pay');
-                if (!empty($phone))
+                $order_id = get_query_var('order-pay');
+                if (!empty($order_id))
                 {
-                    write_log("Phone: ");
-                    write_log($phone);
+                    $order = wc_get_order($order_id);
+                    if(!empty($order))
+                    {
+                        write_log($order);
+                    }
                 }
 
                 wc_add_notice( 'Phone Number is required!', 'error');
