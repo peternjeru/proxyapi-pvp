@@ -395,17 +395,17 @@ function init_ProxyAPI_PVP()
 //                        $this->dueDate = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
 
                         $this->dueDate = intval($metadata->DueDate);
-                        if ($this->dueDate - time() < strtotime("+1 day"))
+                        if (($this->dueDate - time()) <= 86400)
                         {
                             //less than a day left
                             $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_FATAL;
                         }
-                        else if ($this->dueDate - time() < strtotime("+3 days"))
+                        else if (($this->dueDate - time()) <= (86400 * 3))
                         {
                             //less than three days left
                             $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
                         }
-                        else if ($this->dueDate - time() < strtotime("+1 weeks"))
+                        else if (($this->dueDate - time()) <= (86400 * 7))
                         {
                             //less than one week left
                             $this->noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
