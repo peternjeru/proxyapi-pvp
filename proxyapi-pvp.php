@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.2.0
+ * Version: 2.2.2
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -21,10 +21,8 @@ define("WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE", 0);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
 
-if (!session_id("62c4c601-d9fe-459e-95c6-9518d7e8e786"))
-{
-    session_start();
-}
+define("WC_PROXYAPI_PVP_DUE_DATE", 'dueDate');
+define("WC_PROXYAPI_PVP_NOTICE_LEVEL", 'noticeLevel');
 
 require "proxyapi-pvp-uninstall.php";
 
@@ -45,6 +43,7 @@ function init_ProxyAPI_PVP()
             $this->max_amount = 70000;
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
             $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
+            $this->settingsPath = "/pvpsettings.txt";
 
             $this->supports = array(
                 'products'
@@ -436,8 +435,9 @@ function init_ProxyAPI_PVP()
                             //enough time left
                             $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
                         }
-                        $_SESSION["dueDate"] = $dueDate;
-                        $_SESSION["noticeLevel"] = $noticeLevel;
+
+                        $this->__saveData(WC_PROXYAPI_PVP_DUE_DATE, $dueDate);
+                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
                     }
 
                     if (!empty($metadata->TransactionID)
@@ -454,6 +454,30 @@ function init_ProxyAPI_PVP()
             {
                 write_log("Unknown callback");
             }
+        }
+
+        private function __saveData($key, $value)
+        {
+            $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
+            $settings = json_decode(file_get_contents($filePath), true);
+            if (empty($settings))
+            {
+                $settings = array();
+            }
+
+            $settings[$key] = $value;
+            file_put_contents($filePath, json_encode($settings));
+        }
+
+        private function __getData($key)
+        {
+            $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
+            $settings = json_decode(file_get_contents($filePath), true);
+            if (empty($settings))
+            {
+                $settings = array();
+            }
+            return empty($settings[$key]) ? null : $settings[$key];
         }
 
         public function proxyapi_mpesa_transactions()
@@ -513,10 +537,10 @@ function init_ProxyAPI_PVP()
                 $data = $body->Data;
                 $html = "";
 
-                $dueTimestamp = empty($_SESSION["dueDate"]) ? 0 : $_SESSION["dueDate"];
+                $dueTimestamp = empty($this->__getData(WC_PROXYAPI_PVP_DUE_DATE)) ? 0 : $this->__getData(WC_PROXYAPI_PVP_DUE_DATE);
                 if (!empty($dueTimestamp))
                 {
-                    $noticeLevel = empty($_SESSION["noticeLevel"]) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $_SESSION["noticeLevel"];
+                    $noticeLevel = empty($this->__getData(WC_PROXYAPI_PVP_NOTICE_LEVEL)) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $this->__getData(WC_PROXYAPI_PVP_NOTICE_LEVEL);
                     $date = new DateTime();
                     $date->setTimestamp($dueTimestamp);
                     if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
