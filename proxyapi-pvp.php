@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -130,22 +130,41 @@ function init_ProxyAPI_PVP()
                 return false;
             }
 
-            if( empty($_POST['billing_phone']))
+            $order_id = get_query_var('order-pay');
+            if (!empty($order_id))
             {
-                //TODO: could be reorder, check for existing phone number
-
-                $phone = get_query_var('order-pay');
-                if (!empty($phone))
+                //it might be a reorder, check if it exists
+                $order = wc_get_order($order_id);
+                if(!empty($order))
                 {
-                    write_log("Phone: ");
-                    write_log($phone);
+                    //order exists, thus its a reorder
+                    $msisdn = $this->__format_msisdn($order->get_billing_phone());
+                    if(empty($msisdn))
+                    {
+                        wc_add_notice('Phone number not available in order details.', 'error');
+                        return false;
+                    }
                 }
-
-                wc_add_notice( 'Phone Number is required!', 'error');
-                return false;
+                else
+                {
+                    //order does not exist
+                    wc_add_notice('Order details cannot be found.', 'error');
+                    return false;
+                }
+            }
+            else
+            {
+                //its a new order
+                if(empty($_POST['billing_phone']))
+                {
+                    //TODO: could be reorder, check for existing phone number
+                    wc_add_notice( 'Phone Number is required!', 'error');
+                    return false;
+                }
+                $msisdn = $this->__format_msisdn($_POST['billing_phone']);
             }
 
-            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $_POST['billing_phone']) !== 1)
+            if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $msisdn) !== 1)
             {
                 //TODO: could be reorder, check for existing phone number
                 wc_add_notice( 'Please enter a valid Phone Number.', 'error');
@@ -157,12 +176,16 @@ function init_ProxyAPI_PVP()
         public function process_payment($order_id)
         {
             global $woocommerce;
+            $exists = false;
             if(!empty(wc_get_order($order_id)))
             {
-                write_log(wc_get_order($order_id));
+                $order = wc_get_order($order_id);
+                $exists = true;
             }
-
-            $order = new WC_Order($order_id);
+            else
+            {
+                $order = new WC_Order($order_id);
+            }
 
             $requestID = strval($this->__getRandom(15));
             $callbackUrl = home_url('/wc-api/'.strtolower($this->webHook));
@@ -238,13 +261,12 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
-                $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom');
-                add_post_meta($order_id, "request_id", $requestID, true);
-                add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
+                $order->update_status('on-hold', 'Order sent. Waiting for customer to confirm instant payment prompt from Safaricom.');
+                $exists ? update_post_meta($order_id, "request_id", $requestID) : add_post_meta($order_id, "request_id", $requestID, true);
+                $exists ? update_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID) : add_post_meta($order_id, "checkout_request_id", $body->CheckoutRequestID, true);
                 $woocommerce->cart->empty_cart();
 
                 do_action('proxyapi_pvp_payment_pending', $order_id, $requestID, $body->MerchantRequestID, $body->CheckoutRequestID);
-
                 return array(
                     'result' => 'success',
                     'redirect' => $this->get_return_url($order)
@@ -297,12 +319,12 @@ function init_ProxyAPI_PVP()
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
-                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
+                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'.");
                     return;
                 }
 
                 $order = $orders[0];
-                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "failed")
+                if (strtolower($order->get_status()) === "completed" || strtolower($order->get_status()) === "refunded")
                 {
                     do_action('proxyapi_pvp_payment_completed', $order->get_id());
                     write_log("Payment already processed: ".$order->get_status());
@@ -371,7 +393,7 @@ function init_ProxyAPI_PVP()
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
-                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'");
+                    write_log("No orders found for given CheckoutRequestID '".$checkoutRequestId."'.");
                     return;
                 }
 
@@ -420,7 +442,7 @@ function init_ProxyAPI_PVP()
 
                     if (!empty($metadata->TransactionID)
                         && strtolower($order->get_status()) !== "completed"
-                        && strtolower($order->get_status()) !== "failed")
+                        && strtolower($order->get_status()) !== "refunded")
                     {
                         $order->payment_complete($metadata->TransactionID);
                         do_action('proxyapi_pvp_payment_completed', $order->get_id());
@@ -552,7 +574,9 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderFirstName.'</td>
                         <td>'.$transaction->SenderLastName.'</td>
                         <td>'.$formatted.'</td>
-                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                        <td>'.((bool) $transaction->Confirmed === true
+                                ? '<span style="font-weight: bold; color: forestgreen">Yes</span>'
+                                : '<span style="font-weight: bold; color: orangered">No</span>').'</td>
                     </tr>';
                     }
                     else
@@ -566,7 +590,9 @@ function init_ProxyAPI_PVP()
                         <td>'.$transaction->SenderFirstName.'</td>
                         <td>'.$transaction->SenderLastName.'</td>
                         <td>'.$formatted.'</td>
-                        <td>'.((bool) $transaction->Confirmed === true ? 'Yes' : 'No').'</td>
+                        <td>'.((bool) $transaction->Confirmed === true
+                                ? '<span style="font-weight: bold; color: forestgreen">Yes</span>'
+                                : '<span style="font-weight: bold; color: orangered">No</span>').'</td>
                     </tr>';
                     }
                     ++$index;

@@ -69,7 +69,7 @@ No, the plugin places the transaction details directly as metadata into the orde
 = Does the plugin automatically complete transactions? =
 Yes, depending on the result received from Daraja or ProxyAPI. If a transaction returned a failed error code, the equivalent order is marked as failed too. If the transaction was a success, the equivalent order will be assigned the MPesa Transaction ID as its own unique Transaction ID and marked as complete.
 
-= Where can I get the documentation on PVP? =
+= Where can I get the documentation on PVP or ProxyAPI? =
 [Proxy API Documentation](https://docs.proxyapi.co.ke/v1/)
 [Proxy API PVP Documentation](https://docs.proxyapi.co.ke/v1/#pvp)
 [Proxy API Portal](https://api.proxyapi.co.ke/)
@@ -84,23 +84,24 @@ Yes, depending on the result received from Daraja or ProxyAPI. If a transaction 
 
 
 == Changelog ==
-= 1.0 =
-This is the first release.
 
+= 2.2.1 =
+* Fixed changelog
 
-== Upgrade Notice ==
-
-= 1.0 =
-This is the first release.
-
-= 1.1.1 =
-Bug fix for pricing on payment request
-
-= 2.0.0 =
-Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received PVP LnM transaction requests and their status on ProxyAPI
-
-= 2.0.1 =
-Bug fixes
+= 2.2.0 =
+* Added payment retry capability for failed orders
 
 = 2.1.0 =
-Added Due date notification
+* Added Due date notification for admin
+
+= 2.0.1 =
+* Bug fixes
+
+= 2.0.0 =
+* Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received PVP LnM transaction requests and their status on ProxyAPI
+
+= 1.1.1 =
+* Bug fix for pricing on payment request
+
+= 1.0 =
+* This is the first release.
