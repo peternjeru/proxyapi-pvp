@@ -437,7 +437,7 @@ function init_ProxyAPI_PVP()
                         }
 
                         $this->__saveData(WC_PROXYAPI_PVP_DUE_DATE, $dueDate);
-                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
+//                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
                     }
 
                     if (!empty($metadata->TransactionID)
