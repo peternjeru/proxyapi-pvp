@@ -467,7 +467,6 @@ function init_ProxyAPI_PVP()
             {
                 $settings = array();
             }
-
             $settings[$key] = $value;
             file_put_contents($filePath, json_encode($settings));
         }
