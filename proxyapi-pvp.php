@@ -459,7 +459,10 @@ function init_ProxyAPI_PVP()
         private function __saveData($key, $value)
         {
             $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
-            $settings = json_decode(file_get_contents($filePath), true);
+            if (!file_exists($filePath))
+            {
+                $settings = json_decode(file_get_contents($filePath), true);
+            }
             if (empty($settings))
             {
                 $settings = array();
@@ -472,6 +475,10 @@ function init_ProxyAPI_PVP()
         private function __getData($key)
         {
             $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
+            if (!file_exists($filePath))
+            {
+                return null;
+            }
             $settings = json_decode(file_get_contents($filePath), true);
             if (empty($settings))
             {
