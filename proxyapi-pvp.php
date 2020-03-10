@@ -43,7 +43,7 @@ function init_ProxyAPI_PVP()
             $this->max_amount = 70000;
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
             $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
-            $this->settingsPath = "/pvpsettings.txt";
+            $this->settingsPath = "pvpsettings.txt";
 
             $this->supports = array(
                 'products'
@@ -475,7 +475,7 @@ function init_ProxyAPI_PVP()
         private function __getData($key)
         {
             $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
-            if (!file_exists($filePath))
+            if(!file_exists($filePath))
             {
                 return null;
             }
