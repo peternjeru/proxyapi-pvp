@@ -437,7 +437,7 @@ function init_ProxyAPI_PVP()
                         }
 
                         $this->__saveData(WC_PROXYAPI_PVP_DUE_DATE, $dueDate);
-//                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
+                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
                     }
 
                     if (!empty($metadata->TransactionID)
@@ -459,11 +459,11 @@ function init_ProxyAPI_PVP()
         private function __saveData($key, $value)
         {
             $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
-            if (!file_exists($filePath))
+            if (file_exists($filePath))
             {
                 $settings = json_decode(file_get_contents($filePath), true);
             }
-            if (empty($settings))
+            if(empty($settings))
             {
                 $settings = array();
             }
