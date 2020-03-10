@@ -84,26 +84,24 @@ Yes, depending on the result received from Daraja or ProxyAPI. If a transaction 
 
 
 == Changelog ==
-= 1.0 =
-This is the first release.
 
-
-== Upgrade Notice ==
-
-= 1.0 =
-This is the first release.
-
-= 1.1.1 =
-Bug fix for pricing on payment request
-
-= 2.0.0 =
-Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received PVP LnM transaction requests and their status on ProxyAPI
-
-= 2.0.1 =
-Bug fixes
-
-= 2.1.0 =
-Added Due date notification
+= 2.2.1 =
+* Fixed changelog
 
 = 2.2.0 =
-Added payment retry capability for failed orders
+* Added payment retry capability for failed orders
+
+= 2.1.0 =
+* Added Due date notification for admin
+
+= 2.0.1 =
+* Bug fixes
+
+= 2.0.0 =
+* Added new M-Pesa Report tab under WooCommerce -> Reports to show latest received PVP LnM transaction requests and their status on ProxyAPI
+
+= 1.1.1 =
+* Bug fix for pricing on payment request
+
+= 1.0 =
+* This is the first release.
