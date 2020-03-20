@@ -9,7 +9,7 @@
  * Text Domain: pay-via-proxyapi
  *
  * WC requires at least: 3.9.2
- * WC tested up to: 3.9.2
+ * WC tested up to: 4.0.1
  * Requires at least: 5.3
  *
  * License: GNU General Public License v3.0
