@@ -85,6 +85,9 @@ Yes, depending on the result received from Daraja or ProxyAPI. If a transaction 
 
 == Changelog ==
 
+= 2.2.3 =
+* Minor fixes
+
 = 2.2.2 =
 * Fixed session bug
 
