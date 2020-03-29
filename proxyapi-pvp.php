@@ -3,7 +3,7 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.2.3
+ * Version: 2.2.4
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
@@ -22,7 +22,6 @@ define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
 
 define("WC_PROXYAPI_PVP_DUE_DATE", 'dueDate');
-define("WC_PROXYAPI_PVP_NOTICE_LEVEL", 'noticeLevel');
 
 require "proxyapi-pvp-uninstall.php";
 
@@ -410,24 +409,7 @@ function init_ProxyAPI_PVP()
                     if (!empty($metadata->DueDate))
                     {
                         $dueDate = intval($metadata->DueDate);
-                        if (($dueDate - time()) <= (86400 * 2))
-                        {
-                            //less than two days left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
-                        }
-                        else if (($dueDate - time()) <= (86400 * 7))
-                        {
-                            //less than one week left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
-                        }
-                        else
-                        {
-                            //enough time left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
-                        }
-
                         $this->__saveData(WC_PROXYAPI_PVP_DUE_DATE, $dueDate);
-                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
                     }
 
                     if (!empty($metadata->TransactionID)
@@ -536,20 +518,22 @@ function init_ProxyAPI_PVP()
                 $dueTimestamp = empty($this->__getData(WC_PROXYAPI_PVP_DUE_DATE)) ? 0 : $this->__getData(WC_PROXYAPI_PVP_DUE_DATE);
                 if (!empty($dueTimestamp))
                 {
-                    $noticeLevel = empty($this->__getData(WC_PROXYAPI_PVP_NOTICE_LEVEL)) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $this->__getData(WC_PROXYAPI_PVP_NOTICE_LEVEL);
                     $date = new DateTime();
                     $date->setTimestamp($dueTimestamp);
-                    if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                    if (($dueTimestamp - time()) <= (86400 * 2))
                     {
-                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                        //less than two days left
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red;">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                     }
-                    else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                    else if (($dueTimestamp - time()) <= (86400 * 7))
                     {
-                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                        //less than one week left
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange;">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                     }
                     else
                     {
-                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                        //enough time left
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                     }
                     $html .= $formattedDate;
                 }

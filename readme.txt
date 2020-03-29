@@ -85,6 +85,9 @@ Yes, depending on the result received from Daraja or ProxyAPI. If a transaction 
 
 == Changelog ==
 
+= 2.2.4 =
+* Minor fixes
+
 = 2.2.3 =
 * Upgrade to WC v4.0.1
 * Minor fixes
