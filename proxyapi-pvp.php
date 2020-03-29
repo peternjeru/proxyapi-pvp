@@ -3,13 +3,13 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.2.2
+ * Version: 2.2.4
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
  *
  * WC requires at least: 3.9.2
- * WC tested up to: 3.9.2
+ * WC tested up to: 4.0.1
  * Requires at least: 5.3
  *
  * License: GNU General Public License v3.0
@@ -22,7 +22,6 @@ define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
 
 define("WC_PROXYAPI_PVP_DUE_DATE", 'dueDate');
-define("WC_PROXYAPI_PVP_NOTICE_LEVEL", 'noticeLevel');
 
 require "proxyapi-pvp-uninstall.php";
 
@@ -43,7 +42,7 @@ function init_ProxyAPI_PVP()
             $this->max_amount = 70000;
             $this->endpoint = "https://api.proxyapi.co.ke/pvp/lnm";
             $this->reportEndpoint = "https://api.proxyapi.co.ke/pvp/report";
-            $this->settingsPath = "/pvpsettings.txt";
+            $this->settingsPath = "pvpsettings.txt";
 
             $this->supports = array(
                 'products'
@@ -156,7 +155,6 @@ function init_ProxyAPI_PVP()
                 //its a new order
                 if(empty($_POST['billing_phone']))
                 {
-                    //TODO: could be reorder, check for existing phone number
                     wc_add_notice( 'Phone Number is required!', 'error');
                     return false;
                 }
@@ -165,7 +163,6 @@ function init_ProxyAPI_PVP()
 
             if(preg_match('/^(\+?254|0)(7|1)[\d]{8}$/', $msisdn) !== 1)
             {
-                //TODO: could be reorder, check for existing phone number
                 wc_add_notice( 'Please enter a valid Phone Number.', 'error');
                 return false;
             }
@@ -273,14 +270,7 @@ function init_ProxyAPI_PVP()
             }
             else
             {
-                if ($response->has_errors())
-                {
-                    $error = $response->get_error_message();
-                }
-                else
-                {
-                    $error = "Please try again later.";
-                }
+                $error = $response->has_errors() ? $response->get_error_message() : "Please try again later.";
                 wc_add_notice( 'Lipa na MPesa request failed. '.$error, 'error');
                 write_log($error);
                 return;
@@ -303,11 +293,9 @@ function init_ProxyAPI_PVP()
                 return;
             }
 
-            if(!empty($callback->Body) && !empty($callback->Body->stkCallback))
+            if(!empty($callback->Body->stkCallback))
             {
                 //called either on success or failure
-                $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
-
                 if(empty($callback->Body->stkCallback->CheckoutRequestID) || empty($callback->Body->stkCallback->MerchantRequestID))
                 {
                     write_log('Missing mandatory parameters in callback:');
@@ -315,6 +303,7 @@ function init_ProxyAPI_PVP()
                     return;
                 }
 
+                $checkoutRequestId = $callback->Body->stkCallback->CheckoutRequestID;
                 $orders = wc_get_orders(array("checkout_request_id" => $checkoutRequestId));
                 if (empty($orders))
                 {
@@ -378,7 +367,7 @@ function init_ProxyAPI_PVP()
                     }
                 }
             }
-            else if(!empty($callback->Body) && !empty($callback->Body->pvpCallback))
+            else if(!empty($callback->Body->pvpCallback))
             {
                 //called only on success
                 if(empty($callback->Body->pvpCallback->CheckoutRequestID) || empty($callback->Body->pvpCallback->RequestID))
@@ -420,24 +409,7 @@ function init_ProxyAPI_PVP()
                     if (!empty($metadata->DueDate))
                     {
                         $dueDate = intval($metadata->DueDate);
-                        if (($dueDate - time()) <= (86400 * 2))
-                        {
-                            //less than two days left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_ERROR;
-                        }
-                        else if (($dueDate - time()) <= (86400 * 7))
-                        {
-                            //less than one week left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_WARN;
-                        }
-                        else
-                        {
-                            //enough time left
-                            $noticeLevel = WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE;
-                        }
-
                         $this->__saveData(WC_PROXYAPI_PVP_DUE_DATE, $dueDate);
-                        $this->__saveData(WC_PROXYAPI_PVP_NOTICE_LEVEL, $noticeLevel);
                     }
 
                     if (!empty($metadata->TransactionID)
@@ -459,12 +431,14 @@ function init_ProxyAPI_PVP()
         private function __saveData($key, $value)
         {
             $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
-            $settings = json_decode(file_get_contents($filePath), true);
-            if (empty($settings))
+            if (file_exists($filePath))
+            {
+                $settings = json_decode(file_get_contents($filePath), true);
+            }
+            if(empty($settings))
             {
                 $settings = array();
             }
-
             $settings[$key] = $value;
             file_put_contents($filePath, json_encode($settings));
         }
@@ -472,6 +446,10 @@ function init_ProxyAPI_PVP()
         private function __getData($key)
         {
             $filePath = plugin_dir_path(__FILE__).$this->settingsPath;
+            if(!file_exists($filePath))
+            {
+                return null;
+            }
             $settings = json_decode(file_get_contents($filePath), true);
             if (empty($settings))
             {
@@ -540,20 +518,22 @@ function init_ProxyAPI_PVP()
                 $dueTimestamp = empty($this->__getData(WC_PROXYAPI_PVP_DUE_DATE)) ? 0 : $this->__getData(WC_PROXYAPI_PVP_DUE_DATE);
                 if (!empty($dueTimestamp))
                 {
-                    $noticeLevel = empty($this->__getData(WC_PROXYAPI_PVP_NOTICE_LEVEL)) ? WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE : $this->__getData(WC_PROXYAPI_PVP_NOTICE_LEVEL);
                     $date = new DateTime();
                     $date->setTimestamp($dueTimestamp);
-                    if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_ERROR)
+                    if (($dueTimestamp - time()) <= (86400 * 2))
                     {
-                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                        //less than two days left
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: red;">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                     }
-                    else if ($noticeLevel === WC_PROXYAPI_PVP_LOG_LEVEL_WARN)
+                    else if (($dueTimestamp - time()) <= (86400 * 7))
                     {
-                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                        //less than one week left
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold; color: orange;">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                     }
                     else
                     {
-                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
+                        //enough time left
+                        $formattedDate = sprintf( '<div><p style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;">Your ProxyAPI PVP Account is due on %1$s</p></div><br>', $date->format('Y-m-d H:i:s'));
                     }
                     $html .= $formattedDate;
                 }
