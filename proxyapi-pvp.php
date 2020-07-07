@@ -62,7 +62,9 @@ function init_ProxyAPI_PVP()
                 )
             );
             add_action('woocommerce_api_'.strtolower($this->webHook), array( $this, 'pvp_callback'));
-			add_action('woocommerce_api_callback', 'pvp_callback');
+
+            ## handle WC v4.2.2
+            add_action('woocommerce_api_callback', 'pvp_callback');
 		}
 
         public function init_form_fields()
