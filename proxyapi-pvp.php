@@ -40,8 +40,8 @@ function init_ProxyAPI_PVP()
             $this->method_title = 'Pay via Proxy API';
             $this->method_description = "Allow customers to pay using Safaricom's Lipa na M-Pesa via Proxy API";
             $this->max_amount = 150000;
-            $this->endpoint = "https://staging-dot-mpesa-api-1.ew.r.appspot.com/pvp/lnm";
-            $this->reportEndpoint = "https://staging-dot-mpesa-api-1.ew.r.appspot.com/pvp/report";
+            $this->endpoint = "https://staging.proxyapi.co.ke/pvp/lnm";
+            $this->reportEndpoint = "https://staging.proxyapi.co.ke/pvp/report";
             $this->settingsPath = "pvpsettings.txt";
 
             $this->supports = array(
