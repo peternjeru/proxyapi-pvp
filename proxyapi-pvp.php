@@ -3,14 +3,14 @@
  * Plugin Name: Pay via ProxyAPI
  * Plugin URI: http://woocommerce.com/products/woo-pay-via-proxyapi/
  * Description: Accept Safaricom Lipa na M-Pesa payments using Pay via Proxy API
- * Version: 2.2.5
+ * Version: 2.2.6
  * Author: maxp555
  * Author URI: https://proxyapi.co.ke/
  * Text Domain: pay-via-proxyapi
  *
  * WC requires at least: 3.9.2
- * WC tested up to: 4.2.2
- * Requires at least: 5.3
+ * WC tested up to: 6.1
+ * Requires at least: 5.9
  *
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -20,7 +20,6 @@ defined( 'ABSPATH' ) or die( 'Not allowed');
 define("WC_PROXYAPI_PVP_LOG_LEVEL_NOTICE", 0);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_WARN", 1);
 define("WC_PROXYAPI_PVP_LOG_LEVEL_ERROR", 2);
-
 define("WC_PROXYAPI_PVP_DUE_DATE", 'dueDate');
 
 require "proxyapi-pvp-uninstall.php";
