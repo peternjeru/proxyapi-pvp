@@ -2,7 +2,7 @@
 Contributors: maxp555
 Tags: mpesa,lipa-na-mpesa,safaricom-mpesa,proxy-api,proxy,c2b,mpesa-c2b,pvp,proxyapi-pvp
 Requires at least: 5.3
-Tested up to: 5.3.2
+Tested up to: 6.1
 Requires PHP: 5.6
 Stable tag: trunk
 License: GNU General Public License v3.0
@@ -84,6 +84,13 @@ Yes, depending on the result received from Daraja or ProxyAPI. If a transaction 
 
 
 == Changelog ==
+
+= 2.2.7 =
+* Masked Phone number validation changes
+
+= 2.2.6 =
+* Updated WC to v6.1
+* Update WP to v5.9
 
 = 2.2.5 =
 * Updated WC v4.2.2

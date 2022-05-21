@@ -344,7 +344,6 @@ function init_ProxyAPI_PVP()
                     {
                         $items = $callback->Body->stkCallback->CallbackMetadata->Item;
                         $orderDetails = array();
-                        $paramKey = null;
                         foreach ($items as $item)
                         {
                             if (!empty($item->Name) && !empty($item->Value))
